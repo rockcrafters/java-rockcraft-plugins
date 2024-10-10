@@ -75,6 +75,8 @@ target architectures and the startup service command line.
         branch = 'my-chisel-release-branch'
         slices = ['busybox_bins', 'fontconfig_config']
         architectures = ['amd64', 'arm64']
+        createService = false
+        rockcraftYaml = 'rockcraft.yaml'
     }
 
 **Kotlin**
@@ -89,6 +91,8 @@ target architectures and the startup service command line.
         branch = "my-chisel-release-branch"
         slices("busybox_bins", "fontconfig_config")
         architectures("amd64", "arm64")
+        createService = false
+        rockcraftYaml =  "rockcraft.yaml"
     }
 
 ## Issues and Contributions

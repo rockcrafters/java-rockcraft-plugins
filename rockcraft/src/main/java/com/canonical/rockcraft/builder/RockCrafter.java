@@ -13,6 +13,7 @@
  */
 package com.canonical.rockcraft.builder;
 
+import com.canonical.rockcraft.util.MapMerger;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -81,7 +82,7 @@ public class RockCrafter {
             relativeOutputs.add(root.relativize(file.toPath()).toString());
         }
 
-        HashMap<String, Object> rockcraft = new HashMap<String, Object>();
+        Map<String, Object> rockcraft = new HashMap<String, Object>();
         rockcraft.put(IRockcraftNames.ROCKCRAFT_NAME, settings.getName());
         rockcraft.put(IRockcraftNames.ROCKCRAFT_VERSION, String.valueOf(settings.getVersion()));
         rockcraft.put("summary", getOptions().getSummary());
@@ -99,29 +100,48 @@ public class RockCrafter {
         rockcraft.put("base", "bare");
         rockcraft.put("build-base", "ubuntu@24.04");
 
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        Yaml yaml = new Yaml(options);
+        DumperOptions dumperOptions = new DumperOptions();
+        dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        Yaml yaml = new Yaml(dumperOptions);
+
+        Map<String, Object> rockcraftYaml = new HashMap<String, Object>();
+        if (options.getRockcraftYaml() != null) {
+            File rockcraftFile = settings.getProjectPath().resolve(options.getRockcraftYaml()).toFile();
+            if (!rockcraftFile.exists())
+                throw new UnsupportedOperationException("Rockcraft file does not exist.");
+            try (FileInputStream is = new FileInputStream(rockcraftFile)) {
+                rockcraftYaml = yaml.load(is);
+            }
+        }
+
+        Map<String, Object> rockParts = (Map<String, Object>) rockcraftYaml.get("parts");
+        Map<String, Object> rockServices = (Map<String, Object>) rockcraftYaml.get("services");
+        rockcraftYaml.remove("parts");
+        rockcraftYaml.remove("services");
+
+        rockcraft = MapMerger.merge(rockcraft, rockcraftYaml);
 
         StringBuilder yamlOutput = new StringBuilder();
         yamlOutput.append(yaml.dump(rockcraft));
         yamlOutput.append("\n");
         rockcraft.clear();
 
-        if (settings.getBeryxJLink()) {
-            rockcraft.put("services", getImageProjectService(root, filtered));
-        } else {
-            rockcraft.put("services", getProjectService(relativeOutputs));
+        if (options.isCreateService()) {
+            if (settings.getBeryxJLink()) {
+                rockcraft.put("services", MapMerger.merge(getImageProjectService(root, filtered), rockServices));
+            } else {
+                rockcraft.put("services", MapMerger.merge(getProjectService(relativeOutputs), rockServices));
+            }
+
+            yamlOutput.append(yaml.dump(rockcraft));
+            yamlOutput.append("\n");
+            rockcraft.clear();
         }
 
-        yamlOutput.append(yaml.dump(rockcraft));
-        yamlOutput.append("\n");
-        rockcraft.clear();
-
         if (settings.getBeryxJLink()) {
-            rockcraft.put("parts", getImageProjectParts(relativeOutputs));
+            rockcraft.put("parts", MapMerger.merge(getImageProjectParts(relativeOutputs), rockParts));
         } else {
-            rockcraft.put("parts", getProjectParts(filtered, relativeOutputs));
+            rockcraft.put("parts", MapMerger.merge(getProjectParts(filtered, relativeOutputs), rockParts));
         }
 
         yamlOutput.append(yaml.dump(rockcraft));

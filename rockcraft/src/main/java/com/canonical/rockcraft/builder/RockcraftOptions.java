@@ -33,6 +33,8 @@ public class RockcraftOptions {
     private String branch;
     private RockArchitecture[] architectures = new RockArchitecture[0];
     private List<String> slices = new ArrayList<String>();
+    private Path rockcraftYaml = null;
+    private boolean createService = true;
 
     /**
      * Construct RockcraftOptions
@@ -146,7 +148,7 @@ public class RockcraftOptions {
      * @param description - description file
      */
     public void setDescription(String description) {
-        if (description != null){
+        if (description != null) {
             this.description = Paths.get(description);
         }
     }
@@ -221,6 +223,45 @@ public class RockcraftOptions {
      */
     public void setSource(String source) {
         this.source = source;
+    }
+
+
+    /**
+     * Get path to the optional rockcraft.yaml
+     *
+     * @return path to rockcraft yaml
+     */
+    public Path getRockcraftYaml() {
+        return rockcraftYaml;
+    }
+
+    /**
+     * Sets the path to rockcraft.yaml file
+     *
+     * @param description - description file
+     */
+    public void setRockcraftYaml(String rockcraftYaml) {
+        if (rockcraftYaml != null) {
+            this.rockcraftYaml = Paths.get(rockcraftYaml);
+        }
+    }
+
+    /**
+     * Get whether to create service section
+     *
+     * @return default true
+     */
+    public boolean isCreateService() {
+        return createService;
+    }
+
+    /**
+     * Enable or disable service creation
+     *
+     * @param createService - whether to crreate service section
+     */
+    public void setCreateService(boolean createService) {
+        this.createService = createService;
     }
 
     /**

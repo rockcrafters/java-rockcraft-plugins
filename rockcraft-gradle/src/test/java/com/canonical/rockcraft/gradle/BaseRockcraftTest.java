@@ -16,6 +16,7 @@ package com.canonical.rockcraft.gradle;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.TaskOutcome;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -75,6 +76,11 @@ public abstract class BaseRockcraftTest {
         writeString(getJavaSource(), getResource("default-test.in"));
         writeString(getSettingsFile(), "");
         writeString(getBuildFile(), getResource("default-build.in"));
+    }
+
+    @AfterEach
+    protected void tearDown() throws IOException, InterruptedException {
+        new ProcessBuilder("rm", "-rf", projectDir.getAbsolutePath()).start().waitFor();
     }
 
     public BuildResult runBuild(String... target) {

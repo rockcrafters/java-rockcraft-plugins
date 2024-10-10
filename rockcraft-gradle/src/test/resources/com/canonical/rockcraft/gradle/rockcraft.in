@@ -1,0 +1,9 @@
+base: ubuntu@24.04
+
+parts:
+    gradle/rockcraft/runtime:
+        plugin: nil
+        override-build: "echo ok"
+    gradle/rockcraft/dump:
+        plugin: nil
+        override-build: "echo ok"
