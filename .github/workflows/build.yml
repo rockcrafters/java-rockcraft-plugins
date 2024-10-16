@@ -51,7 +51,7 @@ jobs:
           server-id: central
           server-username: MAVEN_USERNAME
           server-password: MAVEN_CENTRAL_TOKEN
-          gpg-private-key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
+          gpg-private-key: check-that-it-is-set
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
       - name: Setup LXD
