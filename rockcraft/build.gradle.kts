@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     `maven-publish`
+    id ("org.gradlex.reproducible-builds") version "1.0"
 }
 
 repositories {

@@ -1,6 +1,7 @@
 plugins {
     `java-gradle-plugin`
     id("com.gradle.plugin-publish") version "1.3.0"
+    id ("org.gradlex.reproducible-builds") version "1.0"
 }
 
 repositories {

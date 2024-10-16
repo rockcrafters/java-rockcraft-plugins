@@ -58,7 +58,7 @@
         </dependency>
         <dependency>
             <groupId>io.github.rockcrafters</groupId>
-            <artifactId>rockcraft</artifactId>
+            <artifactId>rockcraft-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
