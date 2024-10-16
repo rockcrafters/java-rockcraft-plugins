@@ -49,10 +49,10 @@ jobs:
           distribution: 'temurin'
           java-version: '8'
           server-id: central
-          server-username: do-not-deploy
-          server-password: do-not-deploy
-          gpg-private-key: ${{ secrets.OSSRH_GPG_PASSPHRASE }}
-          gpg-passphrase: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_CENTRAL_TOKEN
+          gpg-private-key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
       - name: Setup LXD
         uses: canonical/setup-lxd@main
@@ -68,6 +68,11 @@ jobs:
       - name: Build and verify maven project
         run: |
           mvn -B install invoker:install invoker:run
+        env:
+          MAVEN_USERNAME: do-not-deploy
+          MAVEN_CENTRAL_TOKEN: do-not-deploy
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.OSSRH_GPG_PASSPHRASE }}
+
 
   build-gradle:
     name: Build Gradle
