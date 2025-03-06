@@ -17,8 +17,10 @@ import com.canonical.rockcraft.builder.RockArchitecture;
 import com.canonical.rockcraft.builder.RockcraftOptions;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.rtinfo.RuntimeInformation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +38,9 @@ public abstract class AbstractRockMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
+
+    @Component
+    private RuntimeInformation runtimeInformation;
 
     @Parameter(property = "buildPackage")
     private String buildPackage = "openjdk-21-jdk";
@@ -73,7 +78,6 @@ public abstract class AbstractRockMojo extends AbstractMojo {
     @Parameter(property = "service")
     private boolean createService = true;
 
-
     private RockcraftOptions options = new RockcraftOptions();
 
     /**
@@ -93,6 +97,13 @@ public abstract class AbstractRockMojo extends AbstractMojo {
     protected MavenProject getProject() {
         return project;
     }
+
+    /**
+     * Returns runtime information for Maven
+     *
+     * @return runtime information
+     */
+    protected RuntimeInformation getRuntimeInformation() { return runtimeInformation; }
 
     /**
      * Executes mojo. Initializes RockcraftOptions using plugin
