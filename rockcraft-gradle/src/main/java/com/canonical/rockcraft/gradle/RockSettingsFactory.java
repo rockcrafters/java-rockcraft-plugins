@@ -24,8 +24,8 @@ public class RockSettingsFactory {
      */
     public static final RockProjectSettings createRockProjectSettings(Project project) {
 
-        return new RockProjectSettings(Generator.gradle, project.getName(),
-            String.valueOf(project.getVersion()), project.getGradle().getGradleVersion(),
+        return new RockProjectSettings(Generator.gradle, project.getGradle().getGradleVersion(),
+                project.getName(), String.valueOf(project.getVersion()),
                 project.getProjectDir().toPath(), project.getLayout().getBuildDirectory().getAsFile().get().toPath(),
                 !project.getTasksByName(ITaskNames.JLINK, false).isEmpty() ||
                         !project.getTasksByName(ITaskNames.RUNTIME, false).isEmpty());
