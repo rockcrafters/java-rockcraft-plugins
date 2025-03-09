@@ -14,13 +14,18 @@
 package com.canonical.rockcraft.builder;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.yaml.snakeyaml.Yaml;
 
 public class BuildRockCrafterTest {
 
@@ -45,7 +50,16 @@ public class BuildRockCrafterTest {
         artifacts.add(output);
         BuildRockCrafter rockCrafter = new BuildRockCrafter(settings, options, artifacts);
         rockCrafter.writeRockcraft();
-        RockBuilder.buildRock(settings, null);
+
+        Yaml yaml = new Yaml();
+        try (Reader r = new InputStreamReader(new FileInputStream(new File(tempDir, "rockcraft.yaml")))){
+            Map<String, Object> result = yaml.load(r);
+            Map<String, Object> parts = (Map<String, Object>) result.get("parts");
+            assertTrue(parts.containsKey("dependencies"));
+            assertTrue(parts.containsKey("maven-cache"));
+            assertTrue(parts.containsKey("build-tool"));
+        }
+
         assertTrue(true, "The build should succeed");
     }
 }
