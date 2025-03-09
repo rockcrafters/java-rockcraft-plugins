@@ -13,6 +13,7 @@
  */
 package com.canonical.rockcraft.maven;
 
+import com.canonical.rockcraft.builder.RockArchitecture;
 import com.canonical.rockcraft.builder.RockcraftOptions;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -61,7 +62,7 @@ public abstract class AbstractRockMojo extends AbstractMojo {
     private String branch;
 
     @Parameter(property = "architectures")
-    private RockcraftOptions.RockArchitecture[] architectures = new RockcraftOptions.RockArchitecture[0];
+    private RockArchitecture[] architectures = new RockArchitecture[0];
 
     @Parameter(property = "slices")
     private List<String> slices = new ArrayList<String>();

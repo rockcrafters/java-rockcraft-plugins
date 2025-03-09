@@ -13,6 +13,7 @@
  */
 package com.canonical.rockcraft.maven;
 
+import com.canonical.rockcraft.builder.Generator;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 import org.apache.maven.project.MavenProject;
 
@@ -33,7 +34,7 @@ public class RockSettingsFactory {
      * @return RockProjectSettings
      */
     public static final RockProjectSettings createRockProjectSettings(MavenProject project) {
-        return new RockProjectSettings("maven", project.getName(),
+        return new RockProjectSettings(Generator.maven, project.getName(),
                 project.getVersion(), project.getBasedir().getAbsoluteFile().toPath(),
                 project.getArtifact().getFile().getParentFile().toPath(),
                 false);
