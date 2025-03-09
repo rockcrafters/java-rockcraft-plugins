@@ -17,6 +17,10 @@ tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJ
 dependencies {
     implementation(project(":rockcraft"))
     implementation(libs.osdetector)
+    implementation(libs.mavenmodel)
+    implementation(libs.mavenmodel.builder)
+    implementation(libs.commons.text)
+
 
     // Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter)

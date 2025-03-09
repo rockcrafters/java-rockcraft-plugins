@@ -6,9 +6,12 @@ junit-jupiter = "5.12.0"
 commons-text = "1.13.0"
 osdetector = "1.7.3"
 snakeyaml = "2.4"
+maven_model = "3.9.9"
 
 [libraries]
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
 commons-text = { module = "org.apache.commons:commons-text", version.ref = "commons-text" }
 osdetector = { module = "com.google.gradle:osdetector-gradle-plugin", version.ref = "osdetector" }
 snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
+mavenmodel = { module = "org.apache.maven:maven-model", version.ref = "maven_model" }
+mavenmodel-builder = {module = "org.apache.maven:maven-model-builder", version.ref = "maven_model" }
