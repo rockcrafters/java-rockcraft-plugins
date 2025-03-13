@@ -74,6 +74,7 @@ public abstract class AbstractRockCrafter {
         rockcraft.put(IRockcraftNames.ROCKCRAFT_NAME, getSettings().getName());
         rockcraft.put(IRockcraftNames.ROCKCRAFT_VERSION, String.valueOf(getSettings().getVersion()));
         rockcraft.put("summary", getOptions().getSummary());
+        rockcraft.put( "run-user", "_daemon_");
         Path description = getOptions().getDescription();
         if (description != null) {
             File descriptionFile = getSettings().getProjectPath().resolve(description).toFile();
