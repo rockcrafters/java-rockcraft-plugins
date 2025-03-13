@@ -13,8 +13,10 @@
  */
 package com.canonical.rockcraft.gradle;
 
+import com.canonical.rockcraft.builder.BuildRockcraftOptions;
 import com.canonical.rockcraft.builder.DependencyOptions;
 import com.canonical.rockcraft.builder.RockBuilder;
+import com.canonical.rockcraft.builder.RockProjectSettings;
 import com.canonical.rockcraft.builder.RockcraftOptions;
 import com.google.gradle.osdetector.OsDetector;
 import com.google.gradle.osdetector.OsDetectorPlugin;
@@ -66,20 +68,24 @@ public class RockcraftPlugin implements Plugin<Project> {
                     "testRuntimeClasspath",
             });
         }
+
         TaskProvider<DependencyExportTask> exportTask = project.getTasks()
                 .register("dependencies-export", DependencyExportTask.class, dependencyOptions);
         exportTask.configure(new Action<DependencyExportTask>() {
             @Override
             public void execute(DependencyExportTask dependencyExportTask) {
-                File buildDirectory = dependencyExportTask
-                        .getProject()
-                        .getLayout()
-                        .getBuildDirectory()
-                        .getAsFile().get();
+                final RockProjectSettings settings = RockSettingsFactory.createBuildRockProjectSettings(dependencyExportTask.getProject());
                 dependencyExportTask.getOutputDirectory()
-                        .set(new File(buildDirectory, "dependencies"));
+                        .set(new File(settings.getRockOutput().toFile(), "dependencies"));
             }
         });
+
+        BuildRockcraftOptions buildOptions = project.getExtensions().create("buildRockcraft", BuildRockcraftOptions .class);
+        project.getTasks()
+                .register("create-build-rock", CreateBuildRockcraftTask.class, buildOptions);
+        project.getTasks()
+                .getByName("create-build-rock")
+                .dependsOn(project.getTasksByName("dependencies-export", false));
 
         TaskProvider<Task> checkTask = project.getTasks().register("checkRockcraft", s -> {
             s.doFirst(x -> {
