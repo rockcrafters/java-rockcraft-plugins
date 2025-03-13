@@ -13,6 +13,7 @@
  */
 package com.canonical.rockcraft.gradle;
 
+import com.canonical.rockcraft.builder.IRockcraftNames;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.TaskOutcome;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,9 +43,9 @@ public class DependencyExportTest extends BaseRockcraftTest {
         writeString(getBuildFile(), getResource("dependencies-build.in"));
         BuildResult result = runBuild("dependencies-export", "--stacktrace");
         assertEquals(TaskOutcome.SUCCESS, getLastTaskOutcome(result)); // the build needs to succeed
-        Path springBoot = projectDir.toPath().resolve("build/dependencies/org.springframework.boot/spring-boot/3.0.6/spring-boot-3.0.6.jar");
+        Path springBoot = projectDir.toPath().resolve("build/" + IRockcraftNames.BUILD_ROCK_OUTPUT + "/dependencies/org.springframework.boot/spring-boot/3.0.6/spring-boot-3.0.6.jar");
         assertTrue(springBoot.toFile().exists(), "Spring Boot Jar is downloaded");
-        Path springBootSha1 = projectDir.toPath().resolve("build/dependencies/org.springframework.boot/spring-boot/3.0.6/spring-boot-3.0.6.jar.sha1");
+        Path springBootSha1 = projectDir.toPath().resolve("build/" + IRockcraftNames.BUILD_ROCK_OUTPUT + "/dependencies/org.springframework.boot/spring-boot/3.0.6/spring-boot-3.0.6.jar.sha1");
         String sha1 = Files.readString(springBootSha1);
         assertEquals("095ac2c7aa28fcdef587b2c4f554016f8b9af624", sha1);
     }
