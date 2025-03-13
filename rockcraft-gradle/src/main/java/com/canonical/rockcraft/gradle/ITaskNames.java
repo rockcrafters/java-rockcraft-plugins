@@ -13,6 +13,9 @@
  */
 package com.canonical.rockcraft.gradle;
 
+/**
+ * Task name constants.
+ */
 public interface ITaskNames {
     /**
      * Jar task - used to package application jar by 'application' task
