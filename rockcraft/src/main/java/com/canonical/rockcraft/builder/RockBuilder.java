@@ -56,7 +56,7 @@ public class RockBuilder {
      * @throws InterruptedException - <i>rockcraft</i> process was aborted
      */
     @SuppressWarnings("unchecked")
-    public static void pushRock(RockProjectSettings settings, RockcraftOptions options) throws InterruptedException, IOException {
+    public static void pushRock(RockProjectSettings settings, CommonRockcraftOptions options) throws InterruptedException, IOException {
         Yaml yaml = new Yaml();
         Map<String, Object> rockcraft = (Map<String, Object>) yaml.load(new FileReader(settings.getRockOutput().resolve(IRockcraftNames.ROCKCRAFT_YAML).toFile()));
         String imageName = String.valueOf(rockcraft.get(IRockcraftNames.ROCKCRAFT_NAME));
@@ -75,7 +75,7 @@ public class RockBuilder {
      * @throws IOException          - IO error while writing <i>rockcraft.yaml</i>
      * @throws InterruptedException - <i>rockcraft</i> process was aborted
      */
-    public static void buildRock(RockProjectSettings settings, RockcraftOptions options) throws InterruptedException, IOException {
+    public static void buildRock(RockProjectSettings settings, CommonRockcraftOptions options) throws InterruptedException, IOException {
         ProcessBuilder pb = new ProcessBuilder("rockcraft", "pack")
                 .directory(settings.getRockOutput().toFile())
                 .inheritIO();
