@@ -36,6 +36,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.StringTokenizer;
 
 /**
  * DependencyExportTask writes the project build dependencies to the output
@@ -110,8 +111,17 @@ public abstract class DependencyExportTask extends DefaultTask {
         File f = resolvedArtifact.getFile();
         // gradle cache stores artifacts in <artifact>/<sha1>/<file> directory structure
         File componentLocation = f.getParentFile().getParentFile();
-        String relativePath = resolvedArtifact.getId().getComponentIdentifier().getDisplayName().replace(':', File.separatorChar);
-        Path outputLocation = outputLocationRoot.resolve(relativePath);
+        StringTokenizer tk = new StringTokenizer(resolvedArtifact.getId().getComponentIdentifier().getDisplayName(), ":");
+        StringBuilder relativePath = new StringBuilder();
+        if (tk.hasMoreTokens()) {
+            relativePath.append(tk.nextToken().replace('.', File.separatorChar));
+        }
+        while (tk.hasMoreTokens()) {
+            relativePath.append(File.separatorChar);
+            relativePath.append(tk.nextToken());
+        }
+
+        Path outputLocation = outputLocationRoot.resolve(relativePath.toString());
         File[] components = componentLocation.listFiles();
         if (components == null) {
             return;
