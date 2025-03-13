@@ -64,7 +64,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         Map<String,Object> part = new HashMap<>();
         part.put("plugin", "nil");
         if (settings.getGeneratorName() == Generator.maven) {
-            part.put("build-packages", new String[] {"maven"});
+            part.put("stage-packages", new String[] {"maven"});
         }
         else if (settings.getGeneratorName() == Generator.gradle) {
             part.put("build-packages", new String[] {"unzip", "wget"});
@@ -83,10 +83,16 @@ public class BuildRockCrafter extends AbstractRockCrafter {
 
     private Map<String, Object> createMavenRepository(RockProjectSettings settings, BuildRockcraftOptions options, List<File> files) {
         Map<String,Object> part = new HashMap<>();
-        part.put("plugin", "dump");
-        String source = settings.getProjectPath().relativize(files.get(0).toPath()).toString();
+        part.put("plugin", "nil");
+        String source = settings.getRockOutput().relativize(files.get(0).toPath()).toString();
         part.put("source", source);
         part.put("source-type", "local");
+        StringBuilder commands = new StringBuilder();
+        commands.append("mkdir -p ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.m2/repository/\n");
+        commands.append("cp -r * ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.m2/repository/\n");
+        commands.append("craftctl default");
+        part.put("override-build", commands.toString());
+
         return part;
     }
 
