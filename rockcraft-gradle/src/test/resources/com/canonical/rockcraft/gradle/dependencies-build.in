@@ -1,0 +1,21 @@
+plugins {
+    id('application')
+    id('io.github.rockcrafters.rockcraft')
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation platform('org.springframework.boot:spring-boot-dependencies:3.0.6')
+    implementation 'org.springframework.boot:spring-boot-starter:3.0.6'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.0.6'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'Test'
+    }
+}

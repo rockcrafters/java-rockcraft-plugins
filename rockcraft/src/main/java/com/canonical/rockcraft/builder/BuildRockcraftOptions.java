@@ -1,5 +1,5 @@
-/*
- * Copyright 2024 Canonical Ltd.
+/**
+ * Copyright 2025 Canonical Ltd.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
@@ -11,27 +11,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.canonical.rockcraft.gradle;
+package com.canonical.rockcraft.builder;
 
-/**
- * Task name constants.
- */
-public interface ITaskNames {
-    /**
-     * Jar task - used to package application jar by 'application' task
-     */
-    String JAR = "jar";
-    /**
-     * bootJar - used to package String Boot jar by spring boot plugin
-     */
-    String BOOT_JAR = "bootJar";
-    /**
-     * jlink task is provided by Beryx Jlink plugin
-     */
-    String JLINK = "jlink";
-
-    /***
-     * runtime task is provided by Beryx Runtime plugin
-     */
-    String RUNTIME = "runtime";
+public class BuildRockcraftOptions extends CommonRockcraftOptions {
+    public BuildRockcraftOptions() {
+        super();
+        setBuildPackage("openjdk-21-jdk-headless");
+    }
 }

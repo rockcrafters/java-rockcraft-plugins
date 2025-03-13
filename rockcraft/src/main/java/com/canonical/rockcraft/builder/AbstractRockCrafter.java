@@ -60,6 +60,7 @@ public abstract class AbstractRockCrafter {
      * @throws IOException - the method fails to write rockcraft.yaml
      */
     public void writeRockcraft() throws IOException {
+        getSettings().getRockOutput().toFile().mkdirs();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(getSettings().getRockOutput().resolve(IRockcraftNames.ROCKCRAFT_YAML).toFile()))) {
             String rockcraft = createRockcraft(getSettings().getRockOutput(), getArtifacts());
             writer.write(rockcraft);
@@ -73,6 +74,7 @@ public abstract class AbstractRockCrafter {
         rockcraft.put(IRockcraftNames.ROCKCRAFT_NAME, getSettings().getName());
         rockcraft.put(IRockcraftNames.ROCKCRAFT_VERSION, String.valueOf(getSettings().getVersion()));
         rockcraft.put("summary", getOptions().getSummary());
+        rockcraft.put( "run-user", "_daemon_");
         Path description = getOptions().getDescription();
         if (description != null) {
             File descriptionFile = getSettings().getProjectPath().resolve(description).toFile();
