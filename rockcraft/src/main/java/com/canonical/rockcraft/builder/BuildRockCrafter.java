@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 public class BuildRockCrafter extends AbstractRockCrafter {
-    public BuildRockCrafter(RockProjectSettings settings, CommonRockcraftOptions options, List<File> artifacts) {
+    public BuildRockCrafter(RockProjectSettings settings, BuildRockcraftOptions options, List<File> artifacts) {
         super(settings, options, artifacts);
     }
 
