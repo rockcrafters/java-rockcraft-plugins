@@ -26,16 +26,27 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * CreateBuildRockcraftTask writes rockcraft.yaml for the build rock.
+ */
 public abstract class CreateBuildRockcraftTask extends DefaultTask {
 
     private final BuildRockcraftOptions options;
 
+    /**
+     * Construct CreateBuildRockcraftTask
+     * @param options - rockcraft project options
+     */
     @Inject
     public CreateBuildRockcraftTask(BuildRockcraftOptions options) {
         super();
         this.options = options;
     }
 
+    /**
+     * Task action to write rockcraft.yaml for the build rock
+     * @throws IOException - failed to write rockcraft.yaml
+     */
     @TaskAction
     @SuppressWarnings("unchecked")
     public void writeRockcraft() throws IOException {
