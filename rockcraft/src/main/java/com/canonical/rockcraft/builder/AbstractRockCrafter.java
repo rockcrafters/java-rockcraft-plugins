@@ -60,6 +60,7 @@ public abstract class AbstractRockCrafter {
      * @throws IOException - the method fails to write rockcraft.yaml
      */
     public void writeRockcraft() throws IOException {
+        getSettings().getRockOutput().toFile().mkdirs();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(getSettings().getRockOutput().resolve(IRockcraftNames.ROCKCRAFT_YAML).toFile()))) {
             String rockcraft = createRockcraft(getSettings().getRockOutput(), getArtifacts());
             writer.write(rockcraft);
