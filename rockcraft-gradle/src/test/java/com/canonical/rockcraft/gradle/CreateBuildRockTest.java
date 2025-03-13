@@ -16,9 +16,8 @@ public class CreateBuildRockTest extends BaseRockcraftTest {
 
     @Test
     public void testExport() throws IOException {
-        // export dependencies with implementation and testImplementation dependencies
         writeString(getBuildFile(), getResource("dependencies-build.in"));
-        BuildResult result = runBuild("create-build-rock", "--stacktrace");
+        BuildResult result = runBuild("build-build-rock", "--stacktrace");
         assertEquals(TaskOutcome.SUCCESS, getLastTaskOutcome(result)); // the build needs to succeed
         Path springBoot = projectDir.toPath().resolve("build/" + IRockcraftNames.BUILD_ROCK_OUTPUT + "/dependencies/org.springframework.boot/spring-boot/3.0.6/spring-boot-3.0.6.jar");
         assertTrue(springBoot.toFile().exists(), "Spring Boot Jar is downloaded");
