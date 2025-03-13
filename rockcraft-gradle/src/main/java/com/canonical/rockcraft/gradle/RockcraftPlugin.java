@@ -101,9 +101,6 @@ public class RockcraftPlugin implements Plugin<Project> {
         if (buildTasks.isEmpty())
             throw new UnsupportedOperationException("Rockcraft plugin requires build task");
 
-        for (Task t : buildTasks)
-            t.finalizedBy(checkTask);
-
         Set<Task> tasks = project.getTasksByName(ITaskNames.JLINK, false);
         if (tasks.isEmpty())
             tasks = project.getTasksByName(ITaskNames.RUNTIME, false);
@@ -120,12 +117,13 @@ public class RockcraftPlugin implements Plugin<Project> {
         TaskProvider<CreateRockcraftTask> create = project.getTasks().register("create-rock", CreateRockcraftTask.class, options);
 
         project.getTasks().getByName("push-rock")
-                .dependsOn(build);
+                .dependsOn(build, checkTask);
 
         project.getTasks().getByName("build-rock")
-                .dependsOn(create);
+                .dependsOn(create, checkTask);
 
         project.getTasks().getByName("create-rock")
-                .dependsOn(tasks);
+                .dependsOn(tasks)
+                .dependsOn(checkTask);
     }
 }
