@@ -14,18 +14,25 @@
 package com.canonical.rockcraft.gradle;
 
 import com.canonical.rockcraft.builder.DependencyOptions;
-import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.artifacts.ArtifactCollection;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ModuleVersionIdentifier;
+import org.gradle.api.artifacts.component.ComponentIdentifier;
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
+import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.artifacts.result.ArtifactResolutionResult;
+import org.gradle.api.artifacts.result.ArtifactResult;
+import org.gradle.api.artifacts.result.ComponentArtifactsResult;
+import org.gradle.api.artifacts.result.DependencyResult;
 import org.gradle.api.artifacts.result.ResolvedArtifactResult;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.maven.MavenModule;
+import org.gradle.maven.MavenPomArtifact;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -35,6 +42,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.StringTokenizer;
 
@@ -74,30 +82,48 @@ public abstract class DependencyExportTask extends DefaultTask {
             if (config == null) {
                 throw new IllegalArgumentException(String.format("Configuration %s not found.", configName));
             }
-            ArtifactCollection artifacts = config.getIncoming().getArtifacts();
-            copyArtifacts(artifacts);
+            if (!config.isCanBeResolved()) {
+                logger.warn(String.format("Configuration %s can not be resolved. skipped.", config.getName()));
+                continue;
+            }
+            copyConfiguration(config, getProject().getDependencies());
         }
         // export build script dependencies
-        this.getProject().getBuildscript().getConfigurations().all(new Action<Configuration>() {
-            @Override
-            public void execute(Configuration files) {
-                for (Dependency dep : files.getAllDependencies()) {
-                    ArtifactCollection artifacts = getProject()
-                            .getBuildscript()
-                            .getConfigurations()
-                            .detachedConfiguration(dep)
-                            .getIncoming()
-                            .getArtifacts();
-                    try {
-                        copyArtifacts(artifacts);
-                    }
-                    catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
+        this.getProject()
+                .getBuildscript()
+                .getConfigurations()
+                .forEach( x ->
+                        copyConfiguration(x, getProject().getBuildscript().getDependencies()));
+    }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void copyConfiguration(Configuration files, DependencyHandler handler) {
+        try {
+            copyArtifacts(files.getIncoming().getArtifacts());
+            // resolve and copy POM files
+            Path outputLocationRoot = getOutputDirectory().getAsFile().get().toPath();
+            HashSet<ComponentIdentifier> ids = new HashSet<ComponentIdentifier>();
+            for (DependencyResult result : files.getIncoming().getResolutionResult().getAllDependencies()) {
+                ids.add(result.getFrom().getId());
+                logger.debug("Looking up POM for "+ result.getFrom().getId());
+            }
+            ArtifactResolutionResult artifacts = handler
+                    .createArtifactResolutionQuery()
+                    .forComponents(ids)
+                    .withArtifacts(MavenModule.class, new Class[]{MavenPomArtifact.class})
+                    .execute();
+            for(ComponentArtifactsResult component : artifacts.getResolvedComponents()) {
+                if (component.getId() instanceof ModuleComponentIdentifier) {
+                    for(ArtifactResult artifact : component.getArtifacts(MavenPomArtifact.class)) {
+                        logger.debug("Found artifact "+ artifact.getId());
+                        copyFromGradleCache(((ResolvedArtifactResult)artifact), outputLocationRoot);
+                    }
                 }
             }
-        });
+        }
+        catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void copyArtifacts(ArtifactCollection artifacts) throws IOException {
@@ -109,16 +135,36 @@ public abstract class DependencyExportTask extends DefaultTask {
 
     private void copyFromGradleCache(ResolvedArtifactResult resolvedArtifact, Path outputLocationRoot ) throws IOException {
         File f = resolvedArtifact.getFile();
+        StringTokenizer tk = new StringTokenizer(resolvedArtifact.getId().getComponentIdentifier().getDisplayName(), ":");
+        String group = null;
+        if (tk.hasMoreTokens()) {
+            group = tk.nextToken();
+        }
+        String name = null;
+        if (tk.hasMoreTokens()) {
+            name = tk.nextToken();
+        }
+        String version = null;
+        if (tk.hasMoreTokens()) {
+            version = tk.nextToken();
+        }
+        copyFromGradleCache(f, group, name, version, outputLocationRoot);
+    }
+
+    private void copyFromGradleCache(File f, String group, String name, String version, Path outputLocationRoot ) throws IOException {
         // gradle cache stores artifacts in <artifact>/<sha1>/<file> directory structure
         File componentLocation = f.getParentFile().getParentFile();
-        StringTokenizer tk = new StringTokenizer(resolvedArtifact.getId().getComponentIdentifier().getDisplayName(), ":");
         StringBuilder relativePath = new StringBuilder();
-        if (tk.hasMoreTokens()) {
-            relativePath.append(tk.nextToken().replace('.', File.separatorChar));
+        if (group != null) {
+            relativePath.append(group.replace('.', File.separatorChar));
         }
-        while (tk.hasMoreTokens()) {
+        if (name != null) {
             relativePath.append(File.separatorChar);
-            relativePath.append(tk.nextToken());
+            relativePath.append(name);
+        }
+        if (version != null) {
+            relativePath.append(File.separatorChar);
+            relativePath.append(version);
         }
 
         Path outputLocation = outputLocationRoot.resolve(relativePath.toString());
