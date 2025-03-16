@@ -90,9 +90,17 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         StringBuilder commands = new StringBuilder();
         commands.append("mkdir -p ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.m2/repository/\n");
         commands.append("cp -r * ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.m2/repository/\n");
+        commands.append("# workaround https://github.com/canonical/craft-parts/issues/507\n");
+        commands.append("chown -R 584792:584792  ${CRAFT_PART_INSTALL}/var/lib/pebble/default\n");
         commands.append("craftctl default");
         part.put("override-build", commands.toString());
 
+        HashMap<String, Object> permissions = new HashMap<>();
+        permissions.put("path", "/var/lib/pebble/default");
+        permissions.put("owner", 584792);
+        permissions.put("group", 584792);
+        permissions.put("mode", "755");
+        part.put("permissions", new HashMap[] { permissions });
         return part;
     }
 
