@@ -107,7 +107,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
     private Map<String, Object> createDependenciesPart() {
         Map<String,Object> part = new HashMap<>();
         part.put("plugin", "nil");
-        part.put("build-packages", new String[] {"busybox"});
+        part.put("build-packages", new String[] {"busybox", "default-jre-headless"});
 
         List<String> slices = getOptions().getSlices();
         slices.add("busybox_bins");
@@ -134,7 +134,8 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         }
         overrideCommands += "\n";
         overrideCommands += "busybox --install -s ${CRAFT_PART_INSTALL}/usr/bin/\n";
-        overrideCommands += "cd ${CRAFT_PART_INSTALL} && find . -type f -name java -exec ln -sf --relative {} ${CRAFT_PART_INSTALL}/usr/bin/ \\;\n";
+        overrideCommands += "cd ${CRAFT_PART_INSTALL} && PATH=/usr/bin find . -type f -name java -exec ln -sf --relative {} ${CRAFT_PART_INSTALL}/usr/bin/ \\;\n";
+        overrideCommands += "mkdir -p ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/ &&  cp /etc/ssl/certs/java/cacerts ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/cacerts";
 
         overrideCommands += "\ncraftctl default\n";
         part.put("override-build", overrideCommands);
