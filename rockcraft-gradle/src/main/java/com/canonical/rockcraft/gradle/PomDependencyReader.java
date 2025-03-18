@@ -20,6 +20,7 @@ import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.model.building.ModelBuildingResult;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.component.ComponentIdentifier;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
@@ -37,7 +38,7 @@ import java.util.Set;
 /**
  * Read dependencies of the POM file and return an array of ComponentIdentifiers
  */
-class PomDependencyReader {
+public class PomDependencyReader {
     private final Logger logger = Logging.getLogger(PomDependencyReader.class);
     private final PomResolver pomResolver;
     private final DefaultModelBuilder builder;
@@ -46,12 +47,13 @@ class PomDependencyReader {
      * Constructs POM dependency reader
      * @param handler - DependencyHandler to construct new dependencies
      * @param container - ConfigurationContainer to create detached configurations
+     * @param artifactCopy - ArtifactCopy utility class to copy POMs into destination
      */
-    public PomDependencyReader(DependencyHandler handler, ConfigurationContainer container) {
+    public PomDependencyReader(DependencyHandler handler, ConfigurationContainer container, ArtifactCopy artifactCopy) {
         DefaultModelBuilderFactory factory = new DefaultModelBuilderFactory();
         this.builder = factory.newInstance();
         this.builder.setModelValidator(new SilentModelValidator());
-        this.pomResolver = new PomResolver(handler, container);
+        this.pomResolver = new PomResolver(handler, container, artifactCopy);
     }
 
     /**
@@ -59,41 +61,61 @@ class PomDependencyReader {
      * @param pom - POM file
      * @return ComponentIdenfiers for dependencies
      */
-    Set<ComponentIdentifier> read(File pom) {
+    DependencyResolutionResult read(File pom, Set<String> scopes) {
         HashSet<ComponentIdentifier> toLookup = new HashSet<>();
+        HashSet<ComponentIdentifier> bomLookup = new HashSet<>();
+
         try {
             ModelBuildingRequest req = new DefaultModelBuildingRequest();
             req.setModelResolver(pomResolver);
             req.setPomFile(pom);
-            req.getSystemProperties().putAll(System.getProperties());
+            req.setSystemProperties(System.getProperties());
             req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-            Model mavenModel = builder.build(req).getEffectiveModel();
-
-            if (mavenModel != null) {
-                StringSubstitutor replacer = createPropertyReplacer(mavenModel);
-                if (mavenModel.getDependencies() != null) {
-                    for(org.apache.maven.model.Dependency mavenDep : mavenModel.getDependencies()) {
-                        if (mavenDep.isOptional())
-                            continue;
-                        String scope = mavenDep.getScope();
-                        if ("compile".equals(scope) ||
-                            "test".equals(scope)) {
-                            ModuleComponentIdentifier id =
-                                    DefaultModuleComponentIdentifier.newId(
-                                            DefaultModuleIdentifier.newId(
-                                                    replacer.replace(mavenDep.getGroupId()),
-                                                    replacer.replace(mavenDep.getArtifactId())),
-                                            replacer.replace(mavenDep.getVersion()));
-                            toLookup.add(id);
-                        }
-                    }
-                }
+            ModelBuildingResult builtModel = builder.build(req);
+            processModel(scopes, builtModel.getEffectiveModel(), toLookup, bomLookup);
+            for (var x : toLookup) {
+                System.out.println("Workueue "+ x);
             }
         } catch (ModelBuildingException mbe) {
             logger.warn("Unable to process " + pom, mbe);
             throw new RuntimeException(mbe);
         }
-        return toLookup;
+        return new DependencyResolutionResult(toLookup, bomLookup);
+    }
+
+    private void processModel(Set<String> scopes, Model mavenModel, HashSet<ComponentIdentifier> toLookup, HashSet<ComponentIdentifier> bomLookup) {
+        if (mavenModel != null) {
+            StringSubstitutor replacer = createPropertyReplacer(mavenModel);
+            if (mavenModel.getDependencies() != null) {
+                for(org.apache.maven.model.Dependency mavenDep : mavenModel.getDependencies()) {
+                    if (mavenDep.isOptional())
+                        continue;
+                    String scope = mavenDep.getScope();
+                    if (scopes.contains(scope)) {
+                        ModuleComponentIdentifier id =
+                                createComponentIdentifier(replacer, mavenDep);
+                        toLookup.add(id);
+                    } else {
+                        logger.debug("Dropped "+ mavenDep + " because scope "+ scope);
+                    }
+                }
+            }
+            if (mavenModel.getDependencyManagement() != null) {
+                for (org.apache.maven.model.Dependency mavenDep : mavenModel.getDependencyManagement().getDependencies()) {
+                    ModuleComponentIdentifier id =
+                            createComponentIdentifier(replacer, mavenDep);
+                    bomLookup.add(id);
+                }
+            }
+        }
+    }
+
+    private static ModuleComponentIdentifier createComponentIdentifier(StringSubstitutor replacer, org.apache.maven.model.Dependency dep) {
+        return DefaultModuleComponentIdentifier.newId(
+                DefaultModuleIdentifier.newId(
+                        replacer.replace(dep.getGroupId()),
+                        replacer.replace(dep.getArtifactId())),
+                replacer.replace(dep.getVersion()));
     }
 
     private static  StringSubstitutor createPropertyReplacer(Model mavenModel) {
