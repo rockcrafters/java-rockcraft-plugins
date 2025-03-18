@@ -33,16 +33,23 @@ import java.io.InputStream;
 class PomResolver implements ModelResolver {
     private final ConfigurationContainer configurationContainer;
     private final DependencyHandler handler;
+    private final ArtifactCopy artifactCopy;
 
-    public PomResolver(DependencyHandler handler, ConfigurationContainer configurationContainer) {
+    public PomResolver(DependencyHandler handler, ConfigurationContainer configurationContainer, ArtifactCopy artifactCopy) {
         this.configurationContainer = configurationContainer;
         this.handler = handler;
+        this.artifactCopy = artifactCopy;
     }
 
     public ModelSource resolveModel(String groupId, String artifactId, String version) throws UnresolvableModelException {
         Dependency dep = handler.create(String.format("%s:%s:%s@pom", groupId, artifactId, version));
         Configuration pomConfiguration = configurationContainer.detachedConfiguration(dep);
         final File pomXml = pomConfiguration.getSingleFile();
+        try {
+            artifactCopy.copyToMavenRepository(pomXml, groupId, artifactId, version);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return new ModelSource() {
             public InputStream getInputStream() throws IOException {
                 return new FileInputStream(pomXml);
