@@ -13,6 +13,7 @@
  */
 package com.canonical.rockcraft.gradle;
 
+import com.canonical.rockcraft.builder.BuildRockcraftOptions;
 import com.canonical.rockcraft.builder.DependencyOptions;
 import com.canonical.rockcraft.builder.IRockcraftNames;
 import com.canonical.rockcraft.builder.RockBuilder;
@@ -74,15 +75,27 @@ public class RockcraftPlugin implements Plugin<Project> {
                     .set(output.toFile());
         });
 
-        TaskProvider<Task> checkTask = project.getTasks().register("checkRockcraft", s ->
+        BuildRockcraftOptions buildOptions = project.getExtensions().create("buildRockcraft", BuildRockcraftOptions .class);
+        project.getTasks()
+                .register("create-build-rock", CreateBuildRockcraftTask.class, buildOptions);
+        project.getTasks()
+                .getByName("create-build-rock")
+                .dependsOn(project.getTasksByName("dependencies-export", false));
+        project.getTasks()
+                .register("build-build-rock", BuildBuildRockcraftTask.class, buildOptions);
+        project.getTasks()
+                .getByName("build-build-rock")
+                .dependsOn(project.getTasksByName("create-build-rock", false));
+
+        TaskProvider<Task> checkTask = project.getTasks().register("checkRockcraft", s -> {
             s.doFirst(x -> {
                 try {
                     RockBuilder.checkRockcraft();
                 } catch (IOException | InterruptedException e) {
                     throw new UnsupportedOperationException(e.getMessage());
                 }
-            }
-        ));
+            });
+        });
 
         Set<Task> buildTasks = project.getTasksByName("build", false);
         if (buildTasks.isEmpty())
