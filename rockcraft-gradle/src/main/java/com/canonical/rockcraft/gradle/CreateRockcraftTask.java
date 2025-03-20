@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2024 Canonical Ltd.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -16,7 +16,6 @@ package com.canonical.rockcraft.gradle;
 import com.canonical.rockcraft.builder.RockCrafter;
 import com.canonical.rockcraft.builder.RockcraftOptions;
 import org.gradle.api.Task;
-import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.tasks.TaskAction;
 
 
@@ -48,19 +47,18 @@ public abstract class CreateRockcraftTask extends AbstractRockcraftTask {
     @SuppressWarnings("unchecked")
     @TaskAction
     public void writeRockcraft() {
-        HashSet<File> artifacts = new HashSet<File>();
+        HashSet<File> artifacts = new HashSet<>();
         Set<Object> dependsOn = getDependsOn();
         for (Object entry : dependsOn) {
             HashSet<Task> tasks = (HashSet<Task>) entry;
             for (Task task : tasks) {
-                for (File f : task.getOutputs().getFiles().getFiles())
-                    artifacts.add(f);
+                artifacts.addAll(task.getOutputs().getFiles().getFiles());
             }
         }
 
         try {
             RockCrafter crafter = new RockCrafter(RockSettingsFactory.createRockProjectSettings(getProject()),
-                 getOptions(), new ArrayList<File>(artifacts));
+                 getOptions(), new ArrayList<>(artifacts));
             crafter.writeRockcraft();
         } catch (IOException e) {
             throw new UnsupportedOperationException("Failed to write rockcraft.yaml: " + e.getMessage());

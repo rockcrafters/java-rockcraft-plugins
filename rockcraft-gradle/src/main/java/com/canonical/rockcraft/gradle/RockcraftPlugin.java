@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2024 Canonical Ltd.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -19,7 +19,6 @@ import com.canonical.rockcraft.builder.RockBuilder;
 import com.canonical.rockcraft.builder.RockcraftOptions;
 import com.google.gradle.osdetector.OsDetector;
 import com.google.gradle.osdetector.OsDetectorPlugin;
-import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;

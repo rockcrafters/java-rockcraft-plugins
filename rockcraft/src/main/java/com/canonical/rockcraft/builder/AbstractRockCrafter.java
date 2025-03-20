@@ -42,7 +42,7 @@ public abstract class AbstractRockCrafter {
     protected RockProjectSettings getSettings() { return settings; }
 
     protected Map<String, Object> getPlatforms() {
-        HashMap<String, Object> arches = new HashMap<String, Object>();
+        HashMap<String, Object> arches = new HashMap<>();
         for (RockArchitecture a : getOptions().getArchitectures())
             arches.put(String.valueOf(a), "");
         if (arches.isEmpty())
@@ -69,7 +69,7 @@ public abstract class AbstractRockCrafter {
     protected abstract String createRockcraft(Path root, List<File> files) throws IOException;
 
     protected Map<String, Object> createCommonSection() throws IOException {
-        Map<String, Object> rockcraft = new HashMap<String, Object>();
+        Map<String, Object> rockcraft = new HashMap<>();
         rockcraft.put(IRockcraftNames.ROCKCRAFT_NAME, getSettings().getName());
         rockcraft.put(IRockcraftNames.ROCKCRAFT_VERSION, String.valueOf(getSettings().getVersion()));
         rockcraft.put("summary", getOptions().getSummary());
@@ -90,7 +90,7 @@ public abstract class AbstractRockCrafter {
     }
 
     protected Map<String, Object> loadRockcraftSnippet(Yaml yaml) throws IOException {
-        Map<String, Object> rockcraftYaml = new HashMap<String, Object>();
+        Map<String, Object> rockcraftYaml = new HashMap<>();
         if (getOptions().getRockcraftYaml() != null) {
             File rockcraftFile = getSettings().getProjectPath().resolve(getOptions().getRockcraftYaml()).toFile();
             if (!rockcraftFile.exists())
