@@ -53,13 +53,13 @@ To use the plugin, apply the following two steps:
 **Groovy**
 
     plugins {
-        id 'io.github.rockcrafters.rockcraft' version '0.2.3'
+        id 'io.github.rockcrafters.rockcraft' version '1.0.0'
     }
 
 **Kotlin**
 
     plugins {
-        id("io.github.rockcrafters.rockcraft") version "0.2.3"
+        id("io.github.rockcrafters.rockcraft") version "1.0.0"
     }
 
 ##### Alternatively, you can use the `buildscript` DSL:
@@ -73,7 +73,7 @@ To use the plugin, apply the following two steps:
             }
         }
         dependencies {
-            classpath 'io.github.rockcrafters.rockcraft:0.2.3'
+            classpath 'io.github.rockcrafters.rockcraft:1.0.0'
         }
     }
     apply plugin: 'io.github.rockcrafters.rockcraft-plugin'
@@ -87,7 +87,7 @@ To use the plugin, apply the following two steps:
             }
         }
         dependencies {
-            classpath("io.github.rockcrafters.rockcraft:0.2.3")
+            classpath("io.github.rockcrafters.rockcraft:1.0.0")
         }
     }
     apply(plugin = "io.github.rockcrafters.rockcraft")
@@ -127,6 +127,28 @@ target architectures and the startup service command line.
         architectures("amd64", "arm64")
         createService = false
         rockcraftYaml =  "rockcraft.yaml"
+    }
+
+### 3. Export Dependencies
+
+The plugin provides `dependencies-export` task that stores project dependencies into `build/build-rock/dependences`. 
+This is equivalent to [Maven dependency plugin](https://maven.apache.org/plugins/maven-dependency-plugin/)
+[go-offline](https://maven.apache.org/plugins/maven-dependency-plugin/go-offline-mojo.html) goal.
+By default, the task exports all resolvable configurations of the project and buildscript.
+The `dependenciesExport` configuration allows to customize the list of exported configurations.
+
+**Groovy**
+
+    dependenciesExport {
+        buildScript = true
+        configurations = ["runtimeClasspath", "testRuntimeClasspath"]
+    }
+
+**Kotlin**
+
+    dependenciesExport {
+        buildScript = true
+        configurations("runtimeClasspath", "testRuntimeClasspath")
     }
 
 ## Examples
