@@ -34,7 +34,7 @@ public class BuildRockCrafterTest {
 
     @Test
     public void testGenerateRock() throws IOException, InterruptedException {
-        RockProjectSettings settings = new RockProjectSettings(Generator.gradle,
+        RockProjectSettings settings = new RockProjectSettings(BuildSystem.gradle,
                 "8.12",
                 "project-name",
                 "project-version",

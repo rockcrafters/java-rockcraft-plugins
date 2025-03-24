@@ -81,18 +81,18 @@ public class BuildRockCrafter extends AbstractRockCrafter {
     private Map<String, Object> createBuildTool(RockProjectSettings settings, BuildRockcraftOptions options) {
         Map<String,Object> part = new HashMap<>();
         part.put("plugin", "nil");
-        if (settings.getGeneratorName() == Generator.maven) {
+        if (settings.getBuildSystem() == BuildSystem.maven) {
             part.put("stage-packages", new String[] {"maven"});
         }
-        else if (settings.getGeneratorName() == Generator.gradle) {
+        else if (settings.getBuildSystem() == BuildSystem.gradle) {
             part.put("build-packages", new String[] {"unzip", "wget"});
             StringBuilder sb = new StringBuilder();
-            sb.append(String.format("wget https://services.gradle.org/distributions/gradle-%s-bin.zip\n", settings.getGeneratorVersion()));
-            sb.append(String.format("unzip -o -qq gradle-%s-bin.zip\n", settings.getGeneratorVersion()));
+            sb.append(String.format("wget https://services.gradle.org/distributions/gradle-%s-bin.zip\n", settings.getBuildSystemVersion()));
+            sb.append(String.format("unzip -o -qq gradle-%s-bin.zip\n", settings.getBuildSystemVersion()));
             sb.append("mkdir -p $CRAFT_PART_INSTALL/usr/share/gradle\n");
             sb.append("mkdir -p $CRAFT_PART_INSTALL/usr/bin\n");
             sb.append("rm -rf $CRAFT_PART_INSTALL/usr/share/gradle/*\n");
-            sb.append(String.format("mv gradle-%s/* $CRAFT_PART_INSTALL/usr/share/gradle/\n", settings.getGeneratorVersion()));
+            sb.append(String.format("mv gradle-%s/* $CRAFT_PART_INSTALL/usr/share/gradle/\n", settings.getBuildSystemVersion()));
             sb.append("cd $CRAFT_PART_INSTALL/ && ln -s --relative usr/share/gradle/bin/gradle usr/bin/");
             part.put("override-build", sb.toString());
         }

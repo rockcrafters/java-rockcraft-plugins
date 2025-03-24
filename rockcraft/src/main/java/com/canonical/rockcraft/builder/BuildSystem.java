@@ -13,7 +13,10 @@
  */
 package com.canonical.rockcraft.builder;
 
-public enum Generator {
+/**
+ * Build system enumeration
+ */
+public enum BuildSystem {
     maven,
     gradle
 }

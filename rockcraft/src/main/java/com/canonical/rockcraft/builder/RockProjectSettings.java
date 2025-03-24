@@ -9,25 +9,25 @@ public class RockProjectSettings {
     private final String name;
     private final String version;
     private final Path projectPath;
-    private final Generator generatorName;
-    private final String generatorVersion;
+    private final BuildSystem buildSystem;
+    private final String buildSystemVersion;
     private final Path rockOutput;
     private final boolean beryxJlink;
 
     /**
      * Constructs the rock project settings
      *
-     * @param generatorName name of the generator
-     * @param generatorVersion version of the generator
+     * @param buildSystem name of the build system
+     * @param buildSystemVersion version of the build system
      * @param name          rockcraft project name
      * @param version       rockcraft project version
      * @param projectPath   path to the rockcraft project
      * @param rockOutput    path to where to generate rockcraft.yaml
      * @param beryxJlink    whether to copy Beryx jlink image to the rock
      */
-    public RockProjectSettings(Generator generatorName, String generatorVersion, String name, String version, Path projectPath, Path rockOutput, boolean beryxJlink) {
-        this.generatorName = generatorName;
-        this.generatorVersion = generatorVersion;
+    public RockProjectSettings(BuildSystem buildSystem, String buildSystemVersion, String name, String version, Path projectPath, Path rockOutput, boolean beryxJlink) {
+        this.buildSystem = buildSystem;
+        this.buildSystemVersion = buildSystemVersion;
         this.name = name;
         this.version = version;
         this.projectPath = projectPath;
@@ -36,21 +36,21 @@ public class RockProjectSettings {
     }
 
     /**
-     * Get the generator name
+     * Get the build system
      *
-     * @return generator name
+     * @return build system
      */
-    public Generator getGeneratorName() {
-        return generatorName;
+    public BuildSystem getBuildSystem() {
+        return buildSystem;
     }
 
     /**
-     * Get the generator version
+     * Get the build system version
      *
-     * @return generator version
+     * @return build system version
      */
-    public String getGeneratorVersion() {
-        return generatorVersion;
+    public String getBuildSystemVersion() {
+        return buildSystemVersion;
     }
 
     /**
