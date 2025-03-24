@@ -84,6 +84,10 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         part.put("plugin", "nil");
         if (settings.getBuildSystem() == BuildSystem.maven) {
             part.put("stage-packages", new String[] {"maven"});
+            part.put("stage", new String[]{
+                    "usr/share/maven",
+                    "usr/share/java",
+            });
         }
         else if (settings.getBuildSystem() == BuildSystem.gradle) {
             part.put("build-packages", new String[] {"unzip", "wget"});
@@ -151,7 +155,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         }
         overrideCommands.append(" --root ${CRAFT_PART_INSTALL}/ \\\n");
         for (String slice : slices) {
-            overrideCommands.append(" ");
+            overrideCommands.append("  ");
             overrideCommands.append(slice);
             overrideCommands.append(" \\\n");
         }
