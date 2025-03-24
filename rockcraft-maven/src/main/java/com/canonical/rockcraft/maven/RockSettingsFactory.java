@@ -17,6 +17,7 @@ import com.canonical.rockcraft.builder.BuildSystem;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
+
 /**
  * Creates RockProjectSettings from Maven project
  */
