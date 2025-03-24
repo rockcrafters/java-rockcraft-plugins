@@ -13,6 +13,7 @@
  */
 package com.canonical.rockcraft.gradle;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -73,6 +74,21 @@ public class CreateBuildRockTest extends BaseRockcraftTest {
             Map<String, Object> cachePart =(Map<String, Object>) parts.get("maven-cache");
             buildScript = (String)cachePart.get("override-build");
             assertTrue(buildScript.contains("${CRAFT_PART_INSTALL}/var/lib/pebble/default/.m2/repository/"));
+        }
+    }
+
+    @Test
+    public void testBuildrockcraftOptions() throws IOException {
+        writeString(getBuildFile(), getResource("build-rockcraft-options.in"));
+        File buildRock = new File(getProjectDir(), "build-rock");
+        buildRock.mkdirs();
+        writeString(new File(buildRock, "rockcraft.yaml"), "name: the-rock");
+        BuildResult result = runBuild("create-build-rock", "--stacktrace");
+        assertEquals(TaskOutcome.SUCCESS, getLastTaskOutcome(result)); // the build needs to succeed
+        try (FileInputStream is = new FileInputStream(Paths.get(getProjectDir().getAbsolutePath(), "build", IRockcraftNames.BUILD_ROCK_OUTPUT, IRockcraftNames.ROCKCRAFT_YAML).toFile())) {
+            Yaml yaml = new Yaml();
+            Map<String, Object> parsed = yaml.load(is);
+            assertEquals("the-rock",parsed.get("name"));
         }
     }
 }
