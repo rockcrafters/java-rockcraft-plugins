@@ -5,8 +5,11 @@ import com.canonical.rockcraft.builder.BuildRockcraftOptions;
 import com.canonical.rockcraft.builder.IRockcraftNames;
 import com.canonical.rockcraft.builder.RockArchitecture;
 import com.canonical.rockcraft.builder.RockProjectSettings;
-import org.apache.maven.execution.MavenExecutionRequest;
+import com.canonical.rockcraft.util.MavenArtifactCopy;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -16,24 +19,21 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
-import org.eclipse.aether.repository.LocalRepository;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.artifactId;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.configuration;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.element;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.executeMojo;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.executionEnvironment;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.goal;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.groupId;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.name;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.plugin;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.version;
 
@@ -56,7 +56,7 @@ public final class CreateBuildRockMojo extends AbstractMojo {
     private RuntimeInformation runtimeInformation;
 
     @Parameter(property = "buildPackage")
-    private final String buildPackage = "openjdk-21-jdk";
+    private final String buildPackage = "openjdk-21-jdk-headless";
 
     @Parameter(property = "targetRelease")
     private final int targetRelease = 21;
@@ -85,8 +85,8 @@ public final class CreateBuildRockMojo extends AbstractMojo {
     @Parameter(property = "slices")
     private final List<String> slices = new ArrayList<String>();
 
-    @Parameter(property = "rockcraftYaml")
-    private String rockcraftYaml;
+    @Parameter(property = "buildRockcraftYaml")
+    private String buildRockcraftYaml;
 
     @Parameter(property = "service")
     private final boolean createService = true;
@@ -128,7 +128,7 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         options.setBranch(branch);
         options.setArchitectures(architectures);
         options.setSlices(slices);
-        options.setRockcraftYaml(rockcraftYaml);
+        options.setRockcraftYaml(buildRockcraftYaml);
     }
 
     public void execute() throws MojoExecutionException {
@@ -137,18 +137,6 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         RockProjectSettings settings = RockSettingsFactory.createBuildRockProjectSettings(getRuntimeInformation(), getProject());
         Path dependenciesOutput = settings.getRockOutput().resolve(IRockcraftNames.DEPENDENCIES_ROCK_OUTPUT);
         dependenciesOutput.toFile().mkdirs();
-        System.out.println("!!!! " + dependenciesOutput);
-        // Export dependencies to the output directory
-        MavenExecutionRequest request = session.getRequest();
-//        request.setLocalRepositoryPath(dependenciesOutput.toString());
-//        request.setRemoteRepositories(session.getRequest().getRemoteRepositories());
-
-        MavenSession newSession = new MavenSession(
-                session.getContainer(),
-                session.getRepositorySession(),
-                request,
-                session.getResult());
-
         executeMojo(
                 plugin(groupId("org.apache.maven.plugins"),
                         artifactId("maven-dependency-plugin"),
@@ -156,6 +144,20 @@ public final class CreateBuildRockMojo extends AbstractMojo {
                 goal("go-offline"),
                 configuration(),
                 executionEnvironment(getProject(), session, pluginManager));
+        try {
+            MavenArtifactCopy artifactCopy = new MavenArtifactCopy(dependenciesOutput);
+            String baseDir = session.getLocalRepository().getBasedir();
+            Model model = getProject().getModel();
+            for (Dependency dep : model.getDependencies()) {
+                copyArtifacts(baseDir, dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), artifactCopy);
+            }
+            for (Plugin plugin : model.getBuild().getPlugins()) {
+                copyArtifacts(baseDir, plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), artifactCopy);
+            }
+        }
+        catch (IOException e) {
+            throw new MojoExecutionException(e);
+        }
 
         BuildRockCrafter rockCrafter = new BuildRockCrafter(settings, getOptions(), Collections.singletonList(dependenciesOutput.toFile()));
         try {
@@ -163,6 +165,20 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    private void copyArtifacts(String baseDir, String groupId, String artifactId, String versionId, MavenArtifactCopy artifactCopy) throws IOException {
+        for (File f : getArtifactFiles(baseDir, groupId, artifactId, versionId)) {
+            artifactCopy.copyToMavenRepository(f, groupId, artifactId, versionId);
+        }
+    }
+
+    private File[] getArtifactFiles(String baseDir, String groupId, String artifactId, String versionId) {
+        String artifactPath = baseDir + File.separator
+                + groupId.replace('.', File.separatorChar) + File.separator
+                + artifactId + File.separator
+                + versionId;
+        return new File(artifactPath).listFiles();
     }
 }
 
