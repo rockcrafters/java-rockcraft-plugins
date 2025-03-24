@@ -26,14 +26,14 @@ import java.io.IOException;
  * Gradle task to pack build/test rock
  */
 public class BuildBuildRockcraftTask extends DefaultTask {
-    private final CommonRockcraftOptions options;
+    private final BuildRockcraftOptions options;
 
     /**
      * Construct new BuildBuildRockcraftTask
      * @param options - rockcraft project options
      */
     @Inject
-    public BuildBuildRockcraftTask(CommonRockcraftOptions options) {
+    public BuildBuildRockcraftTask(BuildRockcraftOptions options) {
         this.options = options;
     }
 
