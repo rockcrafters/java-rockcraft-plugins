@@ -13,6 +13,8 @@
  */
 package com.canonical.rockcraft.gradle;
 
+import com.canonical.rockcraft.util.MavenArtifactCopy;
+
 import org.gradle.api.artifacts.ArtifactCollection;
 import org.gradle.api.artifacts.result.ResolvedArtifactResult;
 import org.gradle.api.logging.Logger;
