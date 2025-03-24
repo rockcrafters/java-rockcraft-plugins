@@ -127,7 +127,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
     private Map<String, Object> createDependenciesPart() {
         Map<String,Object> part = new HashMap<>();
         part.put("plugin", "nil");
-        part.put("build-packages", new String[] {"busybox", "default-jre-headless"});
+        part.put("build-packages", new String[] {"busybox", options.getBuildPackage()});
 
         List<String> slices = getOptions().getSlices();
         slices.add("busybox_bins");
