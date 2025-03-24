@@ -13,16 +13,17 @@
  */
 package com.canonical.rockcraft.builder;
 
-import com.canonical.rockcraft.util.MapMerger;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+
+import com.canonical.rockcraft.util.MapMerger;
 
 /**
  * Creates build rock rockcraft.yaml
@@ -93,7 +94,8 @@ public class BuildRockCrafter extends AbstractRockCrafter {
             sb.append("mkdir -p $CRAFT_PART_INSTALL/usr/bin\n");
             sb.append("rm -rf $CRAFT_PART_INSTALL/usr/share/gradle/*\n");
             sb.append(String.format("mv gradle-%s/* $CRAFT_PART_INSTALL/usr/share/gradle/\n", settings.getBuildSystemVersion()));
-            sb.append("cd $CRAFT_PART_INSTALL/ && ln -s --relative usr/share/gradle/bin/gradle usr/bin/");
+            sb.append("cd $CRAFT_PART_INSTALL/ && ln -s --relative usr/share/gradle/bin/gradle usr/bin/\n");
+            sb.append("craftctl default\n");
             part.put("override-build", sb.toString());
         }
         return part;
