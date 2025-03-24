@@ -24,11 +24,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Creates build rock rockcraft.yaml
+ */
 public class BuildRockCrafter extends AbstractRockCrafter {
+
+    /**
+     * Create build rock RockCrafter
+     * @param settings - project settings
+     * @param options - project options
+     * @param artifacts - list of artifact directories containing project dependencies
+     */
     public BuildRockCrafter(RockProjectSettings settings, BuildRockcraftOptions options, List<File> artifacts) {
         super(settings, options, artifacts);
     }
 
+    /**
+     * Create rockcraft.yaml file
+     *
+     * @param root - rockcraft.yaml's directory
+     * @param files - directories containing dependencies
+     * @return rockcraft.yaml string
+     * @throws IOException - failed to generate rockcraft.yaml
+     */
     @Override
     protected String createRockcraft(Path root, List<File> files) throws IOException {
         if (files.size() != 1){
