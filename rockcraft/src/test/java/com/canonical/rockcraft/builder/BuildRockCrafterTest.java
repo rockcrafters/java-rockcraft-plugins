@@ -33,7 +33,7 @@ public class BuildRockCrafterTest {
     private File tempDir;
 
     @Test
-    public void testGenerateRock() throws IOException, InterruptedException {
+    public void testGenerateRock() throws IOException {
         RockProjectSettings settings = new RockProjectSettings(BuildSystem.gradle,
                 "8.12",
                 "project-name",
