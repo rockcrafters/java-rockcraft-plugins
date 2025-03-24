@@ -13,7 +13,7 @@
  */
 package com.canonical.rockcraft.gradle;
 
-import com.canonical.rockcraft.builder.CommonRockcraftOptions;
+import com.canonical.rockcraft.builder.BuildRockcraftOptions;
 import com.canonical.rockcraft.builder.RockBuilder;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 import org.gradle.api.DefaultTask;

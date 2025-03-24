@@ -3,7 +3,7 @@ package com.canonical.rockcraft.gradle;
 import com.canonical.rockcraft.builder.IRockcraftNames;
 import org.gradle.api.Project;
 
-import com.canonical.rockcraft.builder.Generator;
+import com.canonical.rockcraft.builder.BuildSystem;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 
 /**
@@ -24,7 +24,7 @@ public class RockSettingsFactory {
      */
     public static final RockProjectSettings createRockProjectSettings(Project project) {
 
-        return new RockProjectSettings(Generator.gradle, project.getGradle().getGradleVersion(),
+        return new RockProjectSettings(BuildSystem.gradle, project.getGradle().getGradleVersion(),
                 project.getName(), String.valueOf(project.getVersion()),
                 project.getProjectDir().toPath(), project.getLayout().getBuildDirectory().getAsFile().get().toPath(),
                 !project.getTasksByName(ITaskNames.JLINK, false).isEmpty() ||
@@ -38,7 +38,7 @@ public class RockSettingsFactory {
      * @return RockProjectSettings
      */
     public static final RockProjectSettings createBuildRockProjectSettings(Project project) {
-        return new RockProjectSettings(Generator.gradle, project.getGradle().getGradleVersion(),
+        return new RockProjectSettings(BuildSystem.gradle, project.getGradle().getGradleVersion(),
                 project.getName(), String.valueOf(project.getVersion()),
                 project.getProjectDir().toPath(), project.getLayout().getBuildDirectory().getAsFile().get().toPath().resolve(IRockcraftNames.BUILD_ROCK_OUTPUT),
                 !project.getTasksByName(ITaskNames.JLINK, false).isEmpty() ||
