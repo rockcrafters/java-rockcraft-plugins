@@ -131,7 +131,7 @@ target architectures and the startup service command line.
 
 ### 3. Export Dependencies
 
-The plugin provides `dependencies-export` task that stores project dependencies into `build/build-rock/dependences`. 
+The plugin provides `dependencies-export` task that stores project dependencies into `build/build-rock/dependences`.
 This is equivalent to [Maven dependency plugin](https://maven.apache.org/plugins/maven-dependency-plugin/)
 [go-offline](https://maven.apache.org/plugins/maven-dependency-plugin/go-offline-mojo.html) goal.
 By default, the task exports all resolvable configurations of the project and buildscript.
@@ -149,6 +149,39 @@ The `dependenciesExport` configuration allows to customize the list of exported 
     dependenciesExport {
         buildScript = true
         configurations("runtimeClasspath", "testRuntimeClasspath")
+    }
+
+### 4. Create build container
+
+The plugin provides `create-build-rock` and `build-build-rock` tasks
+that creates a chiselled build container. It contains a local maven
+repository with all the project dependencies, chiselled openjdk
+and Gradle installation.
+
+**Groovy**
+
+    buildRockcraft {
+        buildPackage = "openjdk-21-jdk"
+        summary = "A ROCK summary"
+        description = "README.md"
+        source = "http://github.com/myuser/chisel-releases"
+        branch = "my-chisel-release-branch"
+        slices("busybox_bins", "fontconfig_config")
+        architectures("amd64", "arm64")
+        rockcraftYaml =  "rockcraft.yaml"
+    }
+
+**Kotlin**
+
+    buildRockcraft {
+        buildPackage = "openjdk-21-jdk"
+        summary = "A ROCK summary"
+        description = "README.md"
+        source = "http://github.com/myuser/chisel-releases"
+        branch = "my-chisel-release-branch"
+        slices("busybox_bins", "fontconfig_config")
+        architectures("amd64", "arm64")
+        rockcraftYaml =  "rockcraft.yaml"
     }
 
 ## Examples
