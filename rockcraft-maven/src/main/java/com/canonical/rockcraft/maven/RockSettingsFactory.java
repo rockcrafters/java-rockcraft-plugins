@@ -32,8 +32,9 @@ public class RockSettingsFactory {
     RockSettingsFactory() {}
 
     /**
-     * Creates RockProjectSettings from Maven project
+     * Creates RockProjectSettings from the Maven project
      *
+     * @param info - Runtime information to obtain Maven version
      * @param project - Maven project
      * @return RockProjectSettings
      */
@@ -44,6 +45,13 @@ public class RockSettingsFactory {
                 false);
     }
 
+    /**
+     * Creates RockProjectSettings for the build rock from the Maven project
+     *
+     * @param info - Runtime information to obtain Maven version
+     * @param project - Maven project
+     * @return RockProjectSettings
+     */
     public static final RockProjectSettings createBuildRockProjectSettings(RuntimeInformation info, MavenProject project) {
         return new RockProjectSettings(BuildSystem.maven, info.getMavenVersion(), project.getName(),
                 project.getVersion(), project.getBasedir().getAbsoluteFile().toPath(),
