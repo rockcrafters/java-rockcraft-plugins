@@ -115,10 +115,10 @@ public class RockCrafter extends AbstractRockCrafter {
         HashMap<String, Object> parts = new HashMap<String, Object>();
         int id = 0;
         for (String image : images) {
-            parts.put(String.format("%s/rockcraft/dump%d",getSettings().getGeneratorName(), id), getImageDumpPart(image));
+            parts.put(String.format("%s/rockcraft/dump%d",getSettings().getBuildSystem(), id), getImageDumpPart(image));
             ++id;
         }
-        parts.put(String.format("%s/rockcraft/deps", getSettings().getGeneratorName()) , getDepsPart());
+        parts.put(String.format("%s/rockcraft/deps", getSettings().getBuildSystem()) , getDepsPart());
         return parts;
     }
 
@@ -188,14 +188,14 @@ public class RockCrafter extends AbstractRockCrafter {
         RockcraftOptions options = (RockcraftOptions) getOptions();
         IRuntimeProvider provider = options.getJlink() ? new JLinkRuntimePart(options) : new RawRuntimePart(options);
         HashMap<String, Object> parts = new HashMap<String, Object>();
-        parts.put(getSettings().getGeneratorName() + "/rockcraft/dump", getDumpPart(relativeJars));
+        parts.put(getSettings().getBuildSystem() + "/rockcraft/dump", getDumpPart(relativeJars));
         Map<java.lang.String,java.lang.Object> runtimePart = provider.getRuntimePart(files);
         runtimePart.put("after", new String[]{
-                getSettings().getGeneratorName() + "/rockcraft/dump",
-                getSettings().getGeneratorName() + "/rockcraft/deps"
+                getSettings().getBuildSystem() + "/rockcraft/dump",
+                getSettings().getBuildSystem() + "/rockcraft/deps"
         });
-        parts.put(getSettings().getGeneratorName() + "/rockcraft/runtime", runtimePart);
-        parts.put(getSettings().getGeneratorName() + "/rockcraft/deps", getDepsPart());
+        parts.put(getSettings().getBuildSystem() + "/rockcraft/runtime", runtimePart);
+        parts.put(getSettings().getBuildSystem() + "/rockcraft/deps", getDepsPart());
         return parts;
     }
 

@@ -13,9 +13,10 @@
  */
 package com.canonical.rockcraft.maven;
 
-import com.canonical.rockcraft.builder.Generator;
+import com.canonical.rockcraft.builder.BuildSystem;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.rtinfo.RuntimeInformation;
 
 /**
  * Creates RockProjectSettings from Maven project
@@ -33,8 +34,8 @@ public class RockSettingsFactory {
      * @param project - Maven project
      * @return RockProjectSettings
      */
-    public static final RockProjectSettings createRockProjectSettings(MavenProject project) {
-        return new RockProjectSettings(Generator.maven, project.getName(),
+    public static final RockProjectSettings createRockProjectSettings(RuntimeInformation info, MavenProject project) {
+        return new RockProjectSettings(BuildSystem.maven, info.getMavenVersion(), project.getName(),
                 project.getVersion(), project.getBasedir().getAbsoluteFile().toPath(),
                 project.getArtifact().getFile().getParentFile().toPath(),
                 false);

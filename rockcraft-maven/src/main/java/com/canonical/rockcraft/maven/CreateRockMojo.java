@@ -17,6 +17,7 @@ import com.canonical.rockcraft.builder.RockCrafter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.rtinfo.RuntimeInformation;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class CreateRockMojo extends AbstractRockMojo {
         if (jars.isEmpty()) {
             throw new MojoExecutionException("No project artifacts found.");
         }
-        RockCrafter rockCrafter = new RockCrafter(RockSettingsFactory.createRockProjectSettings(getProject()), getOptions(), jars);
+        RockCrafter rockCrafter = new RockCrafter(RockSettingsFactory.createRockProjectSettings(getRuntimeInformation(), getProject()), getOptions(), jars);
         try {
             rockCrafter.writeRockcraft();
         } catch (IOException e) {
