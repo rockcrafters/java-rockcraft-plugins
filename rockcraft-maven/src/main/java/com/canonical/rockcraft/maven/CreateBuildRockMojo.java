@@ -94,6 +94,11 @@ public final class CreateBuildRockMojo extends AbstractMojo {
     private final BuildRockcraftOptions options = new BuildRockcraftOptions();
 
     /**
+     * Creates CreateBuildRockMojo
+     */
+    public CreateBuildRockMojo() {}
+
+    /**
      * Returns BuildRockcraftOptions initialized using plugin options
      *
      * @return initialized plugin options
