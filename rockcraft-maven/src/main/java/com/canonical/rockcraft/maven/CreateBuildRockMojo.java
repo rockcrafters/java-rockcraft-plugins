@@ -136,6 +136,12 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         options.setRockcraftYaml(buildRockcraftYaml);
     }
 
+    /**
+     * Executes the mojo. It refreshes dependencies in target/build-rock/dependencies and generates
+     * target/build-rock/rockcraft.yaml.
+     *
+     * @throws MojoExecutionException - generation failure
+     */
     public void execute() throws MojoExecutionException {
         configure();
 
