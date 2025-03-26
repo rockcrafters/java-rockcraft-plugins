@@ -102,7 +102,7 @@
             <plugin>
                 <groupId>io.github.rockcrafters</groupId>
                 <artifactId>rockcraft-maven-plugin</artifactId>
-                <version>0.2.3</version>
+                <version>1.0.0</version>
                 <executions>
                     <execution>
                         <configuration>
