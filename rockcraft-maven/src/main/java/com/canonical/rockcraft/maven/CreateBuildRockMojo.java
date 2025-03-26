@@ -159,15 +159,10 @@ public final class CreateBuildRockMojo extends AbstractMojo {
             for (Plugin plugin : model.getBuild().getPlugins()) {
                 copyArtifacts(baseDir, plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), artifactCopy);
             }
+            BuildRockCrafter rockCrafter = new BuildRockCrafter(settings, getOptions(), Collections.singletonList(dependenciesOutput.toFile()));
+            rockCrafter.writeRockcraft();
         }
         catch (IOException e) {
-            throw new MojoExecutionException(e);
-        }
-
-        BuildRockCrafter rockCrafter = new BuildRockCrafter(settings, getOptions(), Collections.singletonList(dependenciesOutput.toFile()));
-        try {
-            rockCrafter.writeRockcraft();
-        } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
@@ -186,4 +181,3 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         return new File(artifactPath).listFiles();
     }
 }
-
