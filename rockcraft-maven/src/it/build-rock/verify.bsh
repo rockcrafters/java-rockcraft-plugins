@@ -1,0 +1,19 @@
+import java.io.*;
+
+File rockcraftYaml = new File( basedir.getAbsolutePath() + "/target/build-rock/rockcraft.yaml");
+if ( ! rockcraftYaml.exists() )
+{
+    throw new FileNotFoundException( "Rock file does not exist: " + rockcraftYaml.getAbsolutePath() );
+}
+
+File rockcraftPlugin = new File( basedir.getAbsolutePath() + "/target/build-rock/dependencies/io/github/rockcrafters/rockcraft-maven-plugin");
+if ( ! rockcraftPlugin.exists() )
+{
+    throw new FileNotFoundException( "Rockcraft plugin was not copied: " + rockcraftPlugin.getAbsolutePath() );
+}
+
+File dependency = new File( basedir.getAbsolutePath() +"/target/build-rock/dependencies/org/twdata/maven/mojo-executor");
+if ( ! dependency.exists() )
+{
+    throw new FileNotFoundException( "Declared dependency artifact was not copied: " + rockcraftPlugin.getAbsolutePath() );
+}
