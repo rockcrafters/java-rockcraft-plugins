@@ -60,6 +60,7 @@
                             <goal>create-rock</goal>
                             <goal>build-rock</goal>
                             <goal>push-rock</goal>
+                            <goal>create-build-rock</goal>
                         </goals>
                     </execution>
                 </executions>
