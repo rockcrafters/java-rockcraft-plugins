@@ -74,9 +74,9 @@ public class RockCrafter extends AbstractRockCrafter {
 
         Map<String, Object> rockcraftYaml = loadRockcraftSnippet(yaml);
 
-        Map<String, Object> rockParts = (Map<String, Object>) rockcraftYaml.get("parts");
+        Map<String, Object> rockParts = (Map<String, Object>) rockcraftYaml.get(PARTS);
         Map<String, Object> rockServices = (Map<String, Object>) rockcraftYaml.get("services");
-        rockcraftYaml.remove("parts");
+        rockcraftYaml.remove(PARTS);
         rockcraftYaml.remove("services");
 
         rockcraft = MapMerger.merge(rockcraft, rockcraftYaml);
@@ -99,9 +99,9 @@ public class RockCrafter extends AbstractRockCrafter {
         }
 
         if (getSettings().getBeryxJLink()) {
-            rockcraft.put("parts", MapMerger.merge(getImageProjectParts(relativeOutputs), rockParts));
+            rockcraft.put(PARTS, MapMerger.merge(getImageProjectParts(relativeOutputs), rockParts));
         } else {
-            rockcraft.put("parts", MapMerger.merge(getProjectParts(filtered, relativeOutputs), rockParts));
+            rockcraft.put(PARTS, MapMerger.merge(getProjectParts(filtered, relativeOutputs), rockParts));
         }
 
         yamlOutput.append(yaml.dump(rockcraft));
