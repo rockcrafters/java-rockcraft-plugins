@@ -86,6 +86,12 @@ public class RockcraftPlugin implements Plugin<Project> {
         project.getTasks()
                 .getByName("build-build-rock")
                 .dependsOn(project.getTasksByName("create-build-rock", false));
+        project.getTasks()
+                .register("push-build-rock", PushBuildRockcraftTask.class, buildOptions);
+        project.getTasks()
+                .getByName("push-build-rock")
+                .dependsOn(project.getTasksByName("build-build-rock", false));
+
 
         TaskProvider<Task> checkTask = project.getTasks().register("checkRockcraft", s -> {
             s.doFirst(x -> {
