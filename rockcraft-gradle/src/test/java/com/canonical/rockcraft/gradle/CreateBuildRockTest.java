@@ -52,6 +52,8 @@ public class CreateBuildRockTest extends BaseRockcraftTest {
         try (FileInputStream is = new FileInputStream(Paths.get(getProjectDir().getAbsolutePath(), "build", IRockcraftNames.BUILD_ROCK_OUTPUT, IRockcraftNames.ROCKCRAFT_YAML).toFile())) {
             Yaml yaml = new Yaml();
             Map<String, Object> parsed = yaml.load(is);
+            String name = (String) parsed.get("name");
+            assertEquals("build-" + projectDir.getName(), name);
             Object services = parsed.get("services");
             assertNull(services, "build rock does not define services");
 

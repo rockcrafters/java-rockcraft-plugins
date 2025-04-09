@@ -63,8 +63,11 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         DumperOptions dumperOptions = new DumperOptions();
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(dumperOptions);
-        Map<String, Object> rockcraft = MapMerger.merge(createCommonSection(), loadRockcraftSnippet(yaml));
+        Map<String, Object> commonSection = createCommonSection();
+        String name = (String)commonSection.get("name");
+        commonSection.put("name", "build-" + name);
 
+        Map<String, Object> rockcraft = MapMerger.merge(commonSection, loadRockcraftSnippet(yaml));
         StringBuilder yamlOutput = new StringBuilder();
         yamlOutput.append(yaml.dump(rockcraft));
         yamlOutput.append("\n");
