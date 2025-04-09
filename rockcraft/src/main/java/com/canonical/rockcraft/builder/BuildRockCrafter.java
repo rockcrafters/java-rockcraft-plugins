@@ -136,6 +136,9 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         List<String> slices = getOptions().getSlices();
         slices.add("busybox_bins");
         slices.add("base-files_base");
+        slices.add("base-files_chisel");
+        slices.add("git_bins");
+        slices.add("git_http-support");
         slices.add(options.getBuildPackage() + "_standard");
         slices.add(options.getBuildPackage() + "_headers");
         slices.add(options.getBuildPackage() + "_debug-headers");
