@@ -13,8 +13,11 @@
  */
 package com.canonical.rockcraft.builder;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +56,9 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         if (files.size() != 1){
             throw new UnsupportedOperationException("Build rock requires a single file input - a directory with a maven repository of dependencies");
         }
+
+        writeResourceFiles();
+
         BuildRockcraftOptions buildOptions = (BuildRockcraftOptions) getOptions();
         DumperOptions dumperOptions = new DumperOptions();
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
@@ -76,7 +82,74 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         parts.put("dependencies", createDependenciesPart());
         parts.put("maven-cache", createMavenRepository(settings, options, files));
         parts.put("build-tool", createBuildTool(settings, options));
+        parts.put("entrypoint", createEntrypoint(settings, options));
+        if (settings.getBuildSystem() == BuildSystem.gradle) {
+            parts.put("gradle-init", createInitFile(settings, options));
+        }
         return parts;
+    }
+
+    private Map<String, Object> createEntrypoint(RockProjectSettings settings, BuildRockcraftOptions options) {
+        Map<String,Object> part = new HashMap<>();
+        part.put("plugin", "nil");
+        part.put("source", ".");
+        StringBuilder overrideBuild = new StringBuilder();
+
+        overrideBuild.append("mkdir -p $CRAFT_PART_INSTALL/usr/bin\n");
+
+        if (settings.getBuildSystem() == BuildSystem.maven) {
+            overrideBuild.append("cp build-maven.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
+        } else if (settings.getBuildSystem() == BuildSystem.gradle) {
+            overrideBuild.append("cp build-gradle.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
+        } else {
+            throw new IllegalArgumentException("Unknown build system");
+        }
+        overrideBuild.append("chmod +rx $CRAFT_PART_INSTALL/usr/bin/build\n");
+        overrideBuild.append("craftctl default\n");
+        part.put("override-build", overrideBuild.toString());
+
+        return part;
+    }
+
+    private Map<String, Object> createInitFile(RockProjectSettings settings, BuildRockcraftOptions options) {
+        Map<String,Object> part = new HashMap<>();
+        part.put("plugin", "nil");
+        part.put("source", ".");
+        StringBuilder overrideBuild = new StringBuilder();
+        overrideBuild.append("mkdir -p ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.gradle/init.d/\n");
+        overrideBuild.append("cp local-build.gradle ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.gradle/init.d/\n");
+
+        overrideBuild.append("# workaround https://github.com/canonical/craft-parts/issues/507\n");
+        overrideBuild.append("chown -R 584792:584792  ${CRAFT_PART_INSTALL}/var/lib/pebble/default\n");
+
+        overrideBuild.append("craftctl default");
+        part.put("override-build", overrideBuild.toString());
+
+        HashMap<String, Object> permissions = new HashMap<>();
+        permissions.put("path", "/var/lib/pebble/default");
+        permissions.put("owner", 584792);
+        permissions.put("group", 584792);
+        permissions.put("mode", "755");
+        part.put("permissions", new HashMap[] { permissions });
+        return part;
+    }
+
+    private void writeResourceFiles() throws IOException {
+        for (String resource : new String[]{"build-gradle.sh", "build-maven.sh", "local-build.gradle"}) {
+            try (InputStream is = getClass().getResourceAsStream(String.format("/com/canonical/rockcraft/builder/%s", resource))) {
+                Path output = getSettings().getRockOutput().resolve(resource);
+                ByteArrayOutputStream data = new ByteArrayOutputStream();
+                byte[] buffer = new byte[is.available()];
+                while (is.available() > 0) {
+                    int read = is.read(buffer);
+                    if (read > 0) {
+                        data.write(buffer, 0, read);
+                    }
+                }
+                data.flush();
+                Files.write(output, data.toByteArray());
+            }
+        }
     }
 
     private Map<String, Object> createBuildTool(RockProjectSettings settings, BuildRockcraftOptions options) {
