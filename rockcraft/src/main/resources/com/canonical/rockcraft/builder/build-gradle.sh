@@ -4,7 +4,7 @@ if [ $# -gt 0 ]; then
     shift
 fi
 if [ $# -eq 0 ]; then
-    TASK=build -x checkRockcraft
+    TASK="build -x checkRockcraft"
 else
     TASK=$@
 fi
