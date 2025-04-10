@@ -93,4 +93,24 @@ public class CreateBuildRockTest extends BaseRockcraftTest {
             assertEquals("the-rock",parsed.get("name"));
         }
     }
+
+    @Test
+    public void testBuildRockcraftPartMerge() throws IOException {
+        writeString(getBuildFile(), getResource("build-rockcraft-options.in"));
+        File buildRock = new File(getProjectDir(), "build-rock");
+        buildRock.mkdirs();
+        writeString(new File(buildRock, "rockcraft.yaml"), getResource("build-rockcraft.in"));
+        BuildResult result = runBuild("create-build-rock", "--stacktrace");
+        assertEquals(TaskOutcome.SUCCESS, getLastTaskOutcome(result)); // the build needs to succeed
+        try (FileInputStream is = new FileInputStream(Paths.get(getProjectDir().getAbsolutePath(), "build", IRockcraftNames.BUILD_ROCK_OUTPUT, IRockcraftNames.ROCKCRAFT_YAML).toFile())) {
+            Yaml yaml = new Yaml();
+            Map<String, Object> parsed = yaml.load(is);
+            Map<String, Object> parts = (Map<String, Object>) parsed.get("parts");
+            Map<String, Object> buildTool = (Map<String, Object>) parts.get("build-tool");
+            // plugin is overriden
+            assertEquals("foo", buildTool.get("plugin"));
+            // override build tag is not changed
+            assertTrue(String.valueOf(buildTool.get("override-build")).contains("wget"));
+        }
+    }
 }
