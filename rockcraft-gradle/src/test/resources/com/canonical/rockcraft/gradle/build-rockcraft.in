@@ -1,0 +1,3 @@
+parts:
+    build-tool:
+        plugin: foo

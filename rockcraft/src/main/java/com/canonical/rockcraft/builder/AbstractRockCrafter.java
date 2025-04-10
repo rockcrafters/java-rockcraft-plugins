@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractRockCrafter {
+    public static final String PARTS = "parts";
     protected final RockProjectSettings settings;
     protected final CommonRockcraftOptions options;
     protected final List<File> artifacts;
