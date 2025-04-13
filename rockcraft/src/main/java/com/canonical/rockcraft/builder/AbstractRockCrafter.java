@@ -96,10 +96,14 @@ public abstract class AbstractRockCrafter {
         Map<String, Object> rockcraftYaml = new HashMap<>();
         if (getOptions().getRockcraftYaml() != null) {
             File rockcraftFile = getSettings().getProjectPath().resolve(getOptions().getRockcraftYaml()).toFile();
-            if (!rockcraftFile.exists())
-                throw new UnsupportedOperationException("Rockcraft file does not exist.");
+            if (!rockcraftFile.exists()) {
+                throw new UnsupportedOperationException("Rockcraft file " + rockcraftFile + " does not exist.\n");
+            }
             try (FileInputStream is = new FileInputStream(rockcraftFile)) {
                 rockcraftYaml = yaml.load(is);
+                if (rockcraftYaml == null) {
+                    throw new UnsupportedOperationException("Rockcraft file "+ rockcraftFile + " can not be parsed.\n");
+                }
             }
         }
         return rockcraftYaml;
