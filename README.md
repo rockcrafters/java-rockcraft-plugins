@@ -126,7 +126,7 @@ target architectures and the startup service command line.
         slices("busybox_bins", "fontconfig_config")
         architectures("amd64", "arm64")
         createService = false
-        rockcraftYaml =  "rockcraft.yaml"
+        setRockcraftYaml("rockcraft.yaml")
     }
 
 ### 3. Export Dependencies
@@ -181,7 +181,7 @@ and Gradle installation.
         branch = "my-chisel-release-branch"
         slices("busybox_bins", "fontconfig_config")
         architectures("amd64", "arm64")
-        rockcraftYaml =  "rockcraft.yaml"
+        setRockcraftYaml("rockcraft.yaml")
     }
 
 ## Examples
