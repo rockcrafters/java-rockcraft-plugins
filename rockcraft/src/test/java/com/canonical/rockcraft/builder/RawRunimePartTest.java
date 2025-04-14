@@ -60,11 +60,12 @@ public class RawRunimePartTest {
     @Test
     void rawRuntimeMultipleJars() {
         RockcraftOptions options = new RockcraftOptions();
+        options.setJlink(false);
         RawRuntimePart part = new RawRuntimePart(options);
         Map<String, Object> code = part.getRuntimePart(input);
         // classpath should contain both embeeded jars from the boot jar and every jar found in the jar directory
         // to avoid building incomplete runtime if the dependencies are packaged separately
-        assertTrue(code.get("override-build").toString().contains("CPATH=$(find ${CRAFT_PART_BUILD}/tmp -type f -name *.jar)"));
-        assertTrue(code.get("override-build").toString().contains("CPATH=$(CPATH):$(find ${CRAFT_STAGE} -type f -name *.jar)"));
+        assertTrue(code.get("override-build").toString().contains("for file in $(find \"${CRAFT_PART_BUILD}/tmp\" -type f -name \"*.jar\"); do"));
+        assertTrue(code.get("override-build").toString().contains("for file in $(find \"${CRAFT_STAGE}\" -type f -name \"*.jar\"); do"));
     }
 }

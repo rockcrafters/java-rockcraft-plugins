@@ -64,13 +64,17 @@ public class RawRuntimePart implements IRuntimeProvider {
         append(commands,
                 "(cd ${CRAFT_PART_BUILD}/tmp && for jar in ${PROCESS_JARS}; do jar xvf ${jar}; done;)"
         );
-        append(commands, "CPATH=$(find ${CRAFT_PART_BUILD}/tmp -type f -name *.jar)");
-        append(commands, "CPATH=$(CPATH):$(find ${CRAFT_STAGE} -type f -name *.jar)");
-        append(commands, "CPATH=$(echo ${CPATH}:. | sed s'/[[:space:]]/:/'g)");
+        append(commands, "CPATH=");
+        append(commands, "for file in $(find \"${CRAFT_PART_BUILD}/tmp\" -type f -name \"*.jar\"); do");
+        append(commands, "  CPATH=\"$CPATH:${file}\"");
+        append(commands, "done");
+        append(commands, "for file in $(find \"${CRAFT_STAGE}\" -type f -name \"*.jar\"); do");
+        append(commands, "  CPATH=\"$CPATH:${file}\"");
+        append(commands, "done");
         append(commands, "echo ${CPATH}");
         append(commands, "if [ \"x${PROCESS_JARS}\" != \"x\" ]; then");
-        append(commands, "  deps=$(jdeps --class-path=${CPATH} -q --recursive  --ignore-missing-deps \\");
-        append(commands, String.format("  --print-module-deps --multi-release %d ${PROCESS_JARS}); else deps=java.base; fi", options.getTargetRelease()));
+        append(commands, "  deps=$(jdeps --print-module-deps -q --recursive --ignore-missing-deps \\");
+        append(commands, String.format("  --multi-release %d --class-path=${CPATH} ${PROCESS_JARS}); else deps=java.base; fi", options.getTargetRelease()));
         append(commands, "INSTALL_ROOT=${CRAFT_PART_INSTALL}/${JAVA_HOME}");
         append(commands,
                 "rm -rf ${INSTALL_ROOT} && jlink --add-modules ${deps} --output ${INSTALL_ROOT}"
