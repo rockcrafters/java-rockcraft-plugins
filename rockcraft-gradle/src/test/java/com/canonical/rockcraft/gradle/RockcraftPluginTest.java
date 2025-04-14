@@ -62,7 +62,7 @@ class RockcraftPluginTest extends BaseRockcraftTest {
             Map<String, Object> dumpPart = (Map<String, Object>) parts.get("gradle/rockcraft/dump");
             assertTrue(dumpPart.containsKey("override-build"));
             Map<String, Object> runtimePart = (Map<String, Object>) parts.get("gradle/rockcraft/runtime");
-            assertTrue(runtimePart.containsKey("override-build"));
+            assertEquals("jlink", runtimePart.get("plugin"));
             Map<String, Object> depsPart = (Map<String, Object>) parts.get("gradle/rockcraft/deps");
             assertTrue(depsPart.containsKey("override-build"));
         }
