@@ -19,7 +19,7 @@ package com.canonical.rockcraft.builder;
 public class RockcraftOptions extends CommonRockcraftOptions {
 
     private int targetRelease = 21;
-    private boolean jlink = false;
+    private boolean jlink = true;
     private String command = "";
     private boolean createService = true;
 
