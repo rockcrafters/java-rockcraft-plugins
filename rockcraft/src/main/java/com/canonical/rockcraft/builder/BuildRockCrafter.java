@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import com.canonical.rockcraft.util.MapMerger;
@@ -60,9 +59,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         writeResourceFiles();
 
         BuildRockcraftOptions buildOptions = (BuildRockcraftOptions) getOptions();
-        DumperOptions dumperOptions = new DumperOptions();
-        dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        Yaml yaml = new Yaml(dumperOptions);
+        Yaml yaml = YamlFactory.createYaml();
 
         Map<String, Object> commonSection = createCommonSection();
         String name = (String)commonSection.get("name");

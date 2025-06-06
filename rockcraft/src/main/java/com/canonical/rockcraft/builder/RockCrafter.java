@@ -14,7 +14,6 @@
 package com.canonical.rockcraft.builder;
 
 import com.canonical.rockcraft.util.MapMerger;
-import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
@@ -68,9 +67,7 @@ public class RockCrafter extends AbstractRockCrafter {
 
         Map<String, Object> rockcraft = createCommonSection();
 
-        DumperOptions dumperOptions = new DumperOptions();
-        dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        Yaml yaml = new Yaml(dumperOptions);
+        Yaml yaml = YamlFactory.createYaml();
 
         Map<String, Object> rockcraftYaml = loadRockcraftSnippet(yaml);
 
