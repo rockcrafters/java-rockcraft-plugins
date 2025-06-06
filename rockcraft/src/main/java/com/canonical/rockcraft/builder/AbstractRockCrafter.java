@@ -45,9 +45,9 @@ public abstract class AbstractRockCrafter {
     protected Map<String, Object> getPlatforms() {
         HashMap<String, Object> arches = new HashMap<>();
         for (RockArchitecture a : getOptions().getArchitectures())
-            arches.put(String.valueOf(a), "");
+            arches.put(String.valueOf(a), new YamlFactory.Empty());
         if (arches.isEmpty())
-            arches.put("amd64", "");
+            arches.put("amd64", new YamlFactory.Empty());
         return arches;
     }
 

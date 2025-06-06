@@ -57,7 +57,7 @@ public class RockBuilder {
      */
     @SuppressWarnings("unchecked")
     public static void pushRock(RockProjectSettings settings, CommonRockcraftOptions options) throws InterruptedException, IOException {
-        Yaml yaml = new Yaml();
+        Yaml yaml = YamlFactory.createYaml();
         Map<String, Object> rockcraft = yaml.load(new FileReader(settings.getRockOutput().resolve(IRockcraftNames.ROCKCRAFT_YAML).toFile()));
         String imageName = String.valueOf(rockcraft.get(IRockcraftNames.ROCKCRAFT_NAME));
         String imageVersion = String.valueOf(rockcraft.get(IRockcraftNames.ROCKCRAFT_VERSION));
