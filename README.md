@@ -32,10 +32,10 @@ The generated `rockraft.yaml` can be overridden by providing `rockcraftYaml` con
 | description   | path to the description file, e.g. `README.md`                                                        |
 | command       | command used for the startup service                                                                  |
 | source        | Git URL of `chisel-releases` repository                                                               |
-| branch        | Git branch of `chisel-releases` repository                                                            
+| branch        | Git branch of `chisel-releases` repository                                                            |
 | architectures | list of the supported architectures, e.g. `amd64, arm64`                                              |
 | slices        | list of additional [chisel](https://github.com/canonical/chisel) slices to install                    |
-| rockcraftYaml | path to `rockcraft.yaml` with the overrides for the generated `rockraft.yaml`                         
+| rockcraftYaml | path to `rockcraft.yaml` with the overrides for the generated `rockraft.yaml`                         |
 | createService | create startup service (default true)                                                                 |
 | distTask      | task/goal that creates application distribution that can be deployed to the container (default empty) |
 
@@ -220,9 +220,9 @@ Apply the plugin:
                         </goals>
                     </execution>
                 </executions>
-            <plugin>
+            </plugin>
         </plugins>
-    <build>
+    </build>
 ```
 ### 2. Configure the container
 
