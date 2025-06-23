@@ -23,6 +23,9 @@ import com.google.gradle.osdetector.OsDetectorPlugin;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.logging.LogLevel;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.TaskProvider;
 
 import java.io.File;
@@ -36,6 +39,8 @@ import java.util.Set;
  * Allows to build rock images for Gradle projects.
  */
 public class RockcraftPlugin implements Plugin<Project> {
+
+    private final Logger logger = Logging.getLogger(RockcraftPlugin.class);
 
     /**
      * Constructs RockcraftPlugin
@@ -103,22 +108,28 @@ public class RockcraftPlugin implements Plugin<Project> {
             });
         });
 
-        Set<Task> buildTasks = project.getTasksByName("build", false);
-        if (buildTasks.isEmpty())
-            throw new UnsupportedOperationException("Rockcraft plugin requires build task");
+        project.getTasks()
+                .getByName("build-build-rock")
+                .dependsOn(checkTask);
 
-        for (Task t : buildTasks)
-            t.finalizedBy(checkTask);
+        Set<Task> tasks;
+        String deploymentTask = options.getDistTask();
+        if (deploymentTask == null) {
+            tasks = project.getTasksByName(ITaskNames.JLINK, false);
+            if (tasks.isEmpty())
+                tasks = project.getTasksByName(ITaskNames.RUNTIME, false);
+            if (tasks.isEmpty())
+                tasks = project.getTasksByName(ITaskNames.BOOT_JAR, false);
+            if (tasks.isEmpty())
+                tasks = project.getTasksByName(ITaskNames.JAR, false);
+        } else {
+            tasks = project.getTasksByName(deploymentTask, false);
+        }
 
-        Set<Task> tasks = project.getTasksByName(ITaskNames.JLINK, false);
-        if (tasks.isEmpty())
-            tasks = project.getTasksByName(ITaskNames.RUNTIME, false);
-        if (tasks.isEmpty())
-            tasks = project.getTasksByName(ITaskNames.BOOT_JAR, false);
-        if (tasks.isEmpty())
-            tasks = project.getTasksByName(ITaskNames.JAR, false);
-        if (tasks.isEmpty())
-            throw new UnsupportedOperationException("Rockcraft plugin requires jlink, runtime, bootJar or jar task");
+        if (tasks.isEmpty()) {
+            logger.log(LogLevel.WARN, "create-rock requires jlink, runtime, bootJar, jar task or a valid task name in rockcraft { distTask ='taskName' }, task is not available");
+            return;
+        }
 
         project.getTasks().register("push-rock", PushRockcraftTask.class, options);
 
@@ -127,6 +138,10 @@ public class RockcraftPlugin implements Plugin<Project> {
 
         project.getTasks().getByName("push-rock")
                 .dependsOn(build);
+
+        project.getTasks().getByName("build-rock")
+                .dependsOn(create)
+                        .dependsOn(checkTask);
 
         project.getTasks().getByName("build-rock")
                 .dependsOn(create);
