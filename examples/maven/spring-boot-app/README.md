@@ -22,7 +22,7 @@ This will build the rock image and push it to the local docker daemon
 
 Run the application:
 
-`docker run spring-boot-app-sample exec /usr/bin/java -jar jars/spring-boot-app-sample-0.0.1-SNAPSHOT.jar`
+`docker run spring-boot-app-sample exec /usr/bin/java -jar /jars/spring-boot-app-sample-0.0.1-SNAPSHOT.jar`
 
 This will output:
 
