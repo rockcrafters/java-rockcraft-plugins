@@ -1,5 +1,5 @@
 allprojects {
-    version = "1.1.2"
+    version = "1.1.3"
     group = "io.github.rockcrafters"
     apply(plugin = "maven-publish")
     if (project.findProperty("gpr.repo") != null) {
