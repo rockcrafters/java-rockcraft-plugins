@@ -29,6 +29,7 @@ import java.util.ArrayList;
 @Mojo(name = "create-rock", threadSafe = false, requiresProject = true, defaultPhase = LifecyclePhase.PACKAGE)
 public class CreateRockMojo extends AbstractRockMojo {
 
+
     /**
      * No specific initialization
      */
@@ -41,8 +42,17 @@ public class CreateRockMojo extends AbstractRockMojo {
     public void execute() throws MojoExecutionException {
         super.execute();
 
+        if (!"jar".equals(getProject().getArtifact().getType())) {
+            getLog().warn("Skipping rock generation "+ getProject().getArtifact() + " type "+ getProject().getArtifact().getType());
+            return;
+        }
+
+        File projectArtifact = getProject().getArtifact().getFile();
+        if (projectArtifact == null) {
+            throw new MojoExecutionException("Project artifact file is null " + getProject().getArtifact());
+        }
         ArrayList<File> jars = new ArrayList<File>();
-        jars.add(getProject().getArtifact().getFile());
+        jars.add(projectArtifact);
 
         if (jars.isEmpty()) {
             throw new MojoExecutionException("No project artifacts found.");

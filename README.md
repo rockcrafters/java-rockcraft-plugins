@@ -24,19 +24,20 @@ The generated `rockraft.yaml` can be overridden by providing `rockcraftYaml` con
 
 # Configuration Options
 
-|Name|Description|
-|----|-----------|
-|buildPackage| OpenJDK Ubuntu package used to create a runtime image, e.g. `openjdk-21-jdk-headless`|
-|targetRelease| `--multi-release` option passed to `jlink` |
-|summary| rock image summary, e.g. `Spring Boot Application` |
-|description| path to the description file, e.g. `README.md` |
-|command| command used for the startup service |
-|source | Git URL of `chisel-releases` repository |
-|branch| Git branch of `chisel-releases` repository
-|architectures| list of the supported architectures, e.g. `amd64, arm64` |
-|slices| list of additional [chisel](https://github.com/canonical/chisel) slices to install |
-|rockcraftYaml| path to `rockcraft.yaml` with the overrides for the generated `rockraft.yaml`
-|createService| create startup service (default true) |
+| Name          | Description                                                                                           |
+|---------------|-------------------------------------------------------------------------------------------------------|
+| buildPackage  | OpenJDK Ubuntu package used to create a runtime image, e.g. `openjdk-21-jdk-headless`                 |
+| targetRelease | `--multi-release` option passed to `jlink`                                                            |
+| summary       | rock image summary, e.g. `Spring Boot Application`                                                    |
+| description   | path to the description file, e.g. `README.md`                                                        |
+| command       | command used for the startup service                                                                  |
+| source        | Git URL of `chisel-releases` repository                                                               |
+| branch        | Git branch of `chisel-releases` repository                                                            |
+| architectures | list of the supported architectures, e.g. `amd64, arm64`                                              |
+| slices        | list of additional [chisel](https://github.com/canonical/chisel) slices to install                    |
+| rockcraftYaml | path to `rockcraft.yaml` with the overrides for the generated `rockraft.yaml`                         |
+| createService | create startup service (default true)                                                                 |
+| distTask      | task/goal that creates application distribution that can be deployed to the container (default empty) |
 
 # Gradle Plugin
 
@@ -53,13 +54,13 @@ To use the plugin, apply the following two steps:
 **Groovy**
 
     plugins {
-        id 'io.github.rockcrafters.rockcraft' version '1.1.2'
+        id 'io.github.rockcrafters.rockcraft' version '1.1.3'
     }
 
 **Kotlin**
 
     plugins {
-        id("io.github.rockcrafters.rockcraft") version "1.1.2"
+        id("io.github.rockcrafters.rockcraft") version "1.1.3"
     }
 
 ##### Alternatively, you can use the `buildscript` DSL:
@@ -73,7 +74,7 @@ To use the plugin, apply the following two steps:
             }
         }
         dependencies {
-            classpath 'io.github.rockcrafters.rockcraft:1.1.2'
+            classpath 'io.github.rockcrafters.rockcraft:1.1.3'
         }
     }
     apply plugin: 'io.github.rockcrafters.rockcraft-plugin'
@@ -87,7 +88,7 @@ To use the plugin, apply the following two steps:
             }
         }
         dependencies {
-            classpath("io.github.rockcrafters.rockcraft:1.1.2")
+            classpath("io.github.rockcrafters.rockcraft:1.1.3")
         }
     }
     apply(plugin = "io.github.rockcrafters.rockcraft")
@@ -219,9 +220,9 @@ Apply the plugin:
                         </goals>
                     </execution>
                 </executions>
-            <plugin>
+            </plugin>
         </plugins>
-    <build>
+    </build>
 ```
 ### 2. Configure the container
 

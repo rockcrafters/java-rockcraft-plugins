@@ -13,7 +13,9 @@
  */
 package com.canonical.rockcraft.maven;
 
+import com.canonical.rockcraft.builder.IRockcraftNames;
 import com.canonical.rockcraft.builder.RockBuilder;
+import com.canonical.rockcraft.builder.RockProjectSettings;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -37,7 +39,12 @@ public class BuildRockMojo extends AbstractRockMojo {
     public void execute() throws MojoExecutionException {
         super.execute();
         try {
-            RockBuilder.buildRock(RockSettingsFactory.createRockProjectSettings(getRuntimeInformation(), getProject()), getOptions());
+            RockProjectSettings settings = RockSettingsFactory.createRockProjectSettings(getRuntimeInformation(), getProject());
+            if (!settings.getRockOutput().resolve(IRockcraftNames.ROCKCRAFT_YAML).toFile().exists()) {
+                getLog().warn("Skipping build-rock, rockcraft.yaml does not exist");
+                return;
+            }
+            RockBuilder.buildRock(settings, getOptions());
         } catch (InterruptedException | IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

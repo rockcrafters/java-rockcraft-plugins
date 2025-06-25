@@ -22,6 +22,7 @@ public class RockcraftOptions extends CommonRockcraftOptions {
     private boolean jlink = true;
     private String command = "";
     private boolean createService = true;
+    private String distTask;
 
     /**
      * Construct RockcraftOptions
@@ -101,6 +102,22 @@ public class RockcraftOptions extends CommonRockcraftOptions {
      */
     public void setCreateService(boolean createService) {
         this.createService = createService;
+    }
+
+    /**
+     * Get deployment task/goal
+     * @return deployment task after which the create-rock should be executed
+     */
+    public String getDistTask() {
+        return distTask;
+    }
+
+    /**
+     * Set deployment task/goal
+     * @param distTask - deployment task/goal, e.g. jar
+     */
+    public void setDistTask(String distTask) {
+        this.distTask = distTask;
     }
 
 }
