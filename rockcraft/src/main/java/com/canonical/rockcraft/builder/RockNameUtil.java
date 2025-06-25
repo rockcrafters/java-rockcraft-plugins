@@ -13,7 +13,6 @@
  */
 package com.canonical.rockcraft.builder;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -24,6 +23,7 @@ import java.util.regex.Pattern;
 public class RockNameUtil {
     /**
      * Formats name according to rockcraft rules
+     *
      * @param name - project name
      * @return formatted rock name
      */
@@ -31,13 +31,13 @@ public class RockNameUtil {
         if (name == null) {
             throw new RuntimeException("Rock name can not be null");
         }
-        String rockName = name.toLowerCase()
-                .replace('-', ' ') // replace '-' with ' ' to string leading and trailing hyphens
+        String rockName = name.toLowerCase().replace('-', ' ') // replace '-' with ' ' to strip leading and trailing hyphens
                 .trim() // trim to remove leading or trailing spaces
                 .replace(' ', '-') // replace any spaces with hyphens
                 .replaceAll("-+", "-"); // replace duplicate hyphens with a single one
+        rockName = rockName.substring(0, Math.min(rockName.length(), 40)); // trim length to 40 symbols
         if (!Pattern.compile("^[a-z0-9-]+$").matcher(rockName).matches()) {
-            throw new RuntimeException("Unable to create name for the rock from "+ name + ". Please use custom rockcraft.yaml");
+            rockName = "rock";
         }
         return rockName;
     }
