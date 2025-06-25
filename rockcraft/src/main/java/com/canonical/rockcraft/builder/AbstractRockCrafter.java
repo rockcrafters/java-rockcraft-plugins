@@ -72,7 +72,7 @@ public abstract class AbstractRockCrafter {
 
     protected Map<String, Object> createCommonSection() throws IOException {
         Map<String, Object> rockcraft = new HashMap<>();
-        rockcraft.put(IRockcraftNames.ROCKCRAFT_NAME, getSettings().getName());
+        rockcraft.put(IRockcraftNames.ROCKCRAFT_NAME, RockNameUtil.formatRockName(getSettings().getName()));
         rockcraft.put(IRockcraftNames.ROCKCRAFT_VERSION, String.valueOf(getSettings().getVersion()));
         rockcraft.put("summary", getOptions().getSummary());
         rockcraft.put( "run-user", "_daemon_");
