@@ -16,21 +16,28 @@ package com.canonical.rockcraft.builder;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class RockNameUtilTest {
 
     @Test
-    public void testFormatRockName(){
+    public void testFormatRockName() {
         assertEquals("test", RockNameUtil.formatRockName("test"));
         assertEquals("test", RockNameUtil.formatRockName("TesT"));
-        assertEquals("test", RockNameUtil.formatRockName(" TesT "));
         assertEquals("test", RockNameUtil.formatRockName(" TesT "));
         assertEquals("te-st", RockNameUtil.formatRockName("Te  sT"));
         assertEquals("te-st", RockNameUtil.formatRockName("Te-  sT"));
         assertEquals("te-st", RockNameUtil.formatRockName("Te-  -sT"));
         assertEquals("te-st", RockNameUtil.formatRockName("-Te-  -sT"));
         assertEquals("te-st", RockNameUtil.formatRockName("-Te-  -sT-"));
-        assertThrows(RuntimeException.class, () ->RockNameUtil.formatRockName("-Te- ! -sT") );
+        assertEquals("rock", RockNameUtil.formatRockName("-Te- ! -sT"));
+    }
+
+    @Test
+    public void testRockNameLength() {
+        StringBuilder name = new StringBuilder();
+        for (int i = 0; i < 5; ++i) {
+            name.append("0123456789");
+        }
+        assertEquals(40, RockNameUtil.formatRockName(name.toString()).length());
     }
 }
