@@ -16,6 +16,8 @@ package com.canonical.rockcraft.builder;
 public class BuildRockcraftOptions extends CommonRockcraftOptions {
     private String[] buildGoals = new String[0];
 
+    private boolean forNativeImage = false;
+
     public BuildRockcraftOptions() {
         super();
         setBuildPackage("openjdk-21-jdk-headless");
@@ -27,5 +29,13 @@ public class BuildRockcraftOptions extends CommonRockcraftOptions {
 
     public void setBuildGoals(String[] goal) {
         this.buildGoals = goal;
+    }
+
+    public void setForNativeImage(boolean nativeImage) {
+        this.forNativeImage = nativeImage;
+    }
+
+    public boolean isForNativeImage() {
+        return forNativeImage;
     }
 }

@@ -21,6 +21,7 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
+import org.apache.maven.execution.MavenSession;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,9 @@ public abstract class AbstractRockMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
+
+    @Parameter(defaultValue = "${session}", readonly = true, required = true)
+    private MavenSession session;
 
     @Component
     private RuntimeInformation runtimeInformation;
@@ -96,6 +100,10 @@ public abstract class AbstractRockMojo extends AbstractMojo {
      */
     protected MavenProject getProject() {
         return project;
+    }
+
+    protected MavenSession getSession() {
+        return session;
     }
 
     /**

@@ -130,6 +130,10 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         options.setSlices(slices);
         options.setRockcraftYaml(buildRockcraftYaml);
         options.setBuildGoals(buildGoals);
+
+        List<String> activeProfiles = session.getRequest().getActiveProfiles();
+        boolean isNativeProfileActive = activeProfiles.stream().anyMatch(profile->"native".equals(profile));
+        options.setForNativeImage(isNativeProfileActive);
     }
 
     /**
