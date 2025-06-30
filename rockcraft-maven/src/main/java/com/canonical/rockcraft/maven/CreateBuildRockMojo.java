@@ -117,6 +117,10 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         Path dependenciesOutput = settings.getRockOutput().resolve(IRockcraftNames.DEPENDENCIES_ROCK_OUTPUT);
         dependenciesOutput.toFile().mkdirs();
         try {
+            List<String> activeProfiles = session.getRequest().getActiveProfiles();
+            boolean isNativeProfileActive = activeProfiles.stream().anyMatch(profile->"native".equals(profile));
+            getOptions().setForNativeImage(isNativeProfileActive);
+
             MavenArtifactCopy artifactCopy = new MavenArtifactCopy(dependenciesOutput);
             String baseDir = session.getLocalRepository().getBasedir();
             for (Artifact dep : resolveDependencyArtifacts()) {
