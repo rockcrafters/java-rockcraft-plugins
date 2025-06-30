@@ -17,3 +17,9 @@ if ( ! dependency.exists() )
 {
     throw new FileNotFoundException( "Declared dependency artifact was not copied: " + rockcraftPlugin.getAbsolutePath() );
 }
+
+File dependency = new File( basedir.getAbsolutePath() +"/target/build-rock/dependencies/org/apache/commons/commons-lang3");
+if ( ! dependency.exists() )
+{
+    throw new FileNotFoundException( "Transitive dependency artifact (maven-resolver-plugin -> commons-lang3) was not copied: " + rockcraftPlugin.getAbsolutePath() );
+}
