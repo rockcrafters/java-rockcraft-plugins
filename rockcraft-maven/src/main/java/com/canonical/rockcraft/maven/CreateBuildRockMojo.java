@@ -6,20 +6,15 @@ import com.canonical.rockcraft.builder.IRockcraftNames;
 import com.canonical.rockcraft.builder.RockArchitecture;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 import com.canonical.rockcraft.util.MavenArtifactCopy;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.BuildPluginManager;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
+import org.apache.maven.plugins.dependency.resolvers.GoOfflineMojo;
 import org.apache.maven.rtinfo.RuntimeInformation;
-
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,29 +23,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.twdata.maven.mojoexecutor.MojoExecutor.artifactId;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.configuration;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.executeMojo;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.executionEnvironment;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.goal;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.groupId;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.plugin;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.version;
-
 /**
  * Writes build rock rockcraft file to the output directory
  */
 @Mojo(name = "create-build-rock", threadSafe = false, requiresProject = true, defaultPhase = LifecyclePhase.PACKAGE)
-public final class CreateBuildRockMojo extends AbstractMojo {
-
-    @Component
-    private BuildPluginManager pluginManager;
-
-    @Parameter(defaultValue = "${session}", readonly = true)
-    private MavenSession session;
-
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
+public final class CreateBuildRockMojo extends GoOfflineMojo {
 
     @Component
     private RuntimeInformation runtimeInformation;
@@ -108,15 +85,6 @@ public final class CreateBuildRockMojo extends AbstractMojo {
     }
 
     /**
-     * Returns current Maven project
-     *
-     * @return Maven Project object
-     */
-    private MavenProject getProject() {
-        return project;
-    }
-
-    /**
      * Returns runtime information for Maven
      *
      * @return runtime information
@@ -142,33 +110,25 @@ public final class CreateBuildRockMojo extends AbstractMojo {
      *
      * @throws MojoExecutionException - generation failure
      */
-    public void execute() throws MojoExecutionException {
+    protected void doExecute() throws MojoExecutionException {
         configure();
 
         RockProjectSettings settings = RockSettingsFactory.createBuildRockProjectSettings(getRuntimeInformation(), getProject());
         Path dependenciesOutput = settings.getRockOutput().resolve(IRockcraftNames.DEPENDENCIES_ROCK_OUTPUT);
         dependenciesOutput.toFile().mkdirs();
-        executeMojo(
-                plugin(groupId("org.apache.maven.plugins"),
-                        artifactId("maven-dependency-plugin"),
-                        version("3.8.1")),
-                goal("go-offline"),
-                configuration(),
-                executionEnvironment(getProject(), session, pluginManager));
         try {
             MavenArtifactCopy artifactCopy = new MavenArtifactCopy(dependenciesOutput);
             String baseDir = session.getLocalRepository().getBasedir();
-            Model model = getProject().getModel();
-            for (Dependency dep : model.getDependencies()) {
+            for (Artifact dep : resolveDependencyArtifacts()) {
                 copyArtifacts(baseDir, dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), artifactCopy);
             }
-            for (Plugin plugin : model.getBuild().getPlugins()) {
+            for (Artifact plugin : resolvePluginArtifacts()) {
                 copyArtifacts(baseDir, plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), artifactCopy);
             }
             BuildRockCrafter rockCrafter = new BuildRockCrafter(settings, getOptions(), Collections.singletonList(dependenciesOutput.toFile()));
             rockCrafter.writeRockcraft();
         }
-        catch (IOException e) {
+        catch (IOException | DependencyResolverException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
