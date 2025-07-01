@@ -33,7 +33,7 @@
 
     <packaging>maven-plugin</packaging>
     <properties>
-        <maven-invoker-plugin.version>3.9.0</maven-invoker-plugin.version>
+        <maven-invoker-plugin.version>3.9.1</maven-invoker-plugin.version>
         <maven-plugin-tools.version>3.15.1</maven-plugin-tools.version>
         <mavenVersion>3.9.10</mavenVersion>
         <mavenPluginVersion>3.15.1</mavenPluginVersion>
