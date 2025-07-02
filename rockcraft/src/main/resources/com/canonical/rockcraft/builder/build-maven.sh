@@ -8,5 +8,5 @@ if [ $# -eq 0 ]; then
 else
   GOAL=$@
 fi
-export HOME=/var/lib/pebble/default
-(cd $WORKDIR && mvn $GOAL)
+export HOME=/home/builder
+(cd $WORKDIR && /usr/share/maven/mvn $GOAL)
