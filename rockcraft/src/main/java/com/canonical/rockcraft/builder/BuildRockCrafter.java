@@ -87,11 +87,23 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         parts.put("dependencies", createDependenciesPart());
         parts.put("maven-cache", createMavenRepository(settings, options, files));
         parts.put("build-tool", createBuildTool(settings, options));
+        parts.put("build-user", createBuildUser());
         parts.put("entrypoint", createEntrypoint(settings, options));
         if (settings.getBuildSystem() == BuildSystem.gradle) {
-            parts.put("gradle-init", createInitFile(settings, options));
+            parts.put("gradle-init", createInitFile());
         }
         return parts;
+    }
+
+    private Map<String, Object> createBuildUser() {
+        Map<String,Object> part = new HashMap<>();
+        part.put("plugin", "nil");
+        part.put("source", ".");
+        part.put("overlay-script",
+                "groupadd -R $CRAFT_OVERLAY -g 1000 builder\n" +
+                "useradd --home-dir /home/builder --create-home -R $CRAFT_OVERLAY -M -r -g builder -u 1000 builder\n"+
+                "craftctl-default");
+        return part;
     }
 
     private Map<String, Object> createEntrypoint(RockProjectSettings settings, BuildRockcraftOptions options) {
@@ -116,26 +128,14 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         return part;
     }
 
-    private Map<String, Object> createInitFile(RockProjectSettings settings, BuildRockcraftOptions options) {
+    private Map<String, Object> createInitFile() {
         Map<String,Object> part = new HashMap<>();
         part.put("plugin", "nil");
         part.put("source", ".");
-        StringBuilder overrideBuild = new StringBuilder();
-        overrideBuild.append("mkdir -p ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.gradle/init.d/\n");
-        overrideBuild.append("cp local-build.gradle ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.gradle/init.d/\n");
-
-        overrideBuild.append("# workaround https://github.com/canonical/craft-parts/issues/507\n");
-        overrideBuild.append("chown -R 584792:584792  ${CRAFT_PART_INSTALL}/var/lib/pebble/default\n");
-
-        overrideBuild.append("craftctl default");
-        part.put("override-build", overrideBuild.toString());
-
-        HashMap<String, Object> permissions = new HashMap<>();
-        permissions.put("path", "/var/lib/pebble/default");
-        permissions.put("owner", 584792);
-        permissions.put("group", 584792);
-        permissions.put("mode", "755");
-        part.put("permissions", new HashMap[] { permissions });
+        String overrideBuild = "mkdir -p ${CRAFT_PART_INSTALL}/usr/share/gradle/init.d/\n" +
+                "cp local-build.gradle ${CRAFT_PART_INSTALL}/usr/share/gradle/init.d/\n" +
+                "craftctl default";
+        part.put("override-build", overrideBuild);
         return part;
     }
 
@@ -189,20 +189,12 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         String source = settings.getRockOutput().relativize(files.get(0).toPath()).toString();
         part.put("source", source);
         part.put("source-type", "local");
-        StringBuilder commands = new StringBuilder();
-        commands.append("mkdir -p ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.m2/repository/\n");
-        commands.append("cp -r * ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.m2/repository/\n");
-        commands.append("# workaround https://github.com/canonical/craft-parts/issues/507\n");
-        commands.append("chown -R 584792:584792  ${CRAFT_PART_INSTALL}/var/lib/pebble/default\n");
-        commands.append("craftctl default");
-        part.put("override-build", commands.toString());
-
-        HashMap<String, Object> permissions = new HashMap<>();
-        permissions.put("path", "/var/lib/pebble/default");
-        permissions.put("owner", 584792);
-        permissions.put("group", 584792);
-        permissions.put("mode", "755");
-        part.put("permissions", new HashMap[] { permissions });
+        part.put("after", new String[]{ "build-user"});
+        String commands = "mkdir -p ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
+                "cp -r * ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
+                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
+                "craftctl default\n";
+        part.put("override-build", commands);
         return part;
     }
 
