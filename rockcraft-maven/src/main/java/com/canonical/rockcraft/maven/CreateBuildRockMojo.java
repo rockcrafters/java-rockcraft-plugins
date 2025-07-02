@@ -7,6 +7,9 @@ import com.canonical.rockcraft.builder.RockArchitecture;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 import com.canonical.rockcraft.util.MavenArtifactCopy;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -15,8 +18,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.resolvers.GoOfflineMojo;
 import org.apache.maven.rtinfo.RuntimeInformation;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -135,6 +140,21 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
 
     private void copyArtifacts(String baseDir, String groupId, String artifactId, String versionId, MavenArtifactCopy artifactCopy) throws IOException {
         for (File f : getArtifactFiles(baseDir, groupId, artifactId, versionId)) {
+            try {
+                if (f.getName().endsWith(".pom")) {
+                    MavenXpp3Reader reader = new MavenXpp3Reader();
+                    try (FileReader fReader = new FileReader(f)) {
+                        Model m = null;
+                        m = reader.read(fReader);
+                        Parent parent = m.getParent();
+                        if (parent != null) {
+                            copyArtifacts(baseDir, parent.getGroupId(), parent.getArtifactId(), parent.getVersion(), artifactCopy);
+                        }
+                    }
+                }
+            } catch (XmlPullParserException e) {
+                throw new RuntimeException(e);
+            }
             artifactCopy.copyToMavenRepository(f, groupId, artifactId, versionId);
         }
     }
