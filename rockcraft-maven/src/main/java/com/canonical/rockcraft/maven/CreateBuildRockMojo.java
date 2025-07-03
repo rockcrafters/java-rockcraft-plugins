@@ -25,17 +25,18 @@ import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Writes build rock rockcraft file to the output directory
@@ -85,6 +86,9 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
     @Parameter(property = "service")
     private final boolean createService = true;
 
+    @Parameter(defaultValue = "${maven.home}", readonly = true, required = true)
+    private File mavenHome;
+
     private final BuildRockcraftOptions options = new BuildRockcraftOptions();
 
     /**
@@ -131,6 +135,8 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         configure();
 
         RockProjectSettings settings = RockSettingsFactory.createBuildRockProjectSettings(getRuntimeInformation(), getProject());
+        copyMaven(settings);
+
         Path dependenciesOutput = settings.getRockOutput().resolve(IRockcraftNames.DEPENDENCIES_ROCK_OUTPUT);
         dependenciesOutput.toFile().mkdirs();
         try {
@@ -151,6 +157,24 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         }
         catch (IOException | DependencyResolverException e) {
             throw new MojoExecutionException(e.getMessage(), e);
+        }
+    }
+
+    private void copyMaven(RockProjectSettings settings) throws MojoExecutionException {
+        final Path mavenOutput = settings.getRockOutput().resolve(IRockcraftNames.MAVEN_OUTPUT);
+        try {
+            try (Stream<Path> s = Files.walk(mavenHome.toPath())) {
+              s.forEach(sourcePath -> {
+                  try {
+                      Path destinationPath = mavenOutput.resolve(mavenHome.toPath().relativize(sourcePath));
+                      Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+                  } catch (IOException e) {
+                      throw new RuntimeException("Failed to copy " + sourcePath, e);
+                  }
+              });
+            }
+        } catch (IOException e) {
+            throw new MojoExecutionException(e);
         }
     }
 
