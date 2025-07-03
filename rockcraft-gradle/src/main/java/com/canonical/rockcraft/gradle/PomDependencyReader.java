@@ -117,10 +117,12 @@ public class PomDependencyReader {
 
     private static  StringSubstitutor createPropertyReplacer(Model mavenModel) {
         HashMap<String, String> replacements = new HashMap<>();
-
         for(String propertyName : mavenModel.getProperties().stringPropertyNames()) {
             replacements.put(propertyName, mavenModel.getProperties().getProperty(propertyName));
         }
+        replacements.put("project.version", mavenModel.getVersion());
+        replacements.put("project.groupId", mavenModel.getGroupId());
+        replacements.put("project.artifactId", mavenModel.getArtifactId());
 
         return new StringSubstitutor(replacements);
     }

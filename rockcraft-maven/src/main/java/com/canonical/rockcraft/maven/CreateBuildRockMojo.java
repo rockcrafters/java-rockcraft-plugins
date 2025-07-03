@@ -9,7 +9,12 @@ import com.canonical.rockcraft.util.MavenArtifactCopy;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.model.building.ModelProblemCollector;
+import org.apache.maven.model.building.ModelProblemCollectorRequest;
+import org.apache.maven.model.interpolation.StringSearchModelInterpolator;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -33,6 +38,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +50,8 @@ import java.util.stream.Stream;
  */
 @Mojo(name = "create-build-rock", threadSafe = false, requiresProject = true, defaultPhase = LifecyclePhase.PACKAGE)
 public final class CreateBuildRockMojo extends GoOfflineMojo {
+
+    private HashSet<String> processed;
 
     @Component
     private ProjectBuilder projectBuilder;
@@ -140,6 +149,7 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         Path dependenciesOutput = settings.getRockOutput().resolve(IRockcraftNames.DEPENDENCIES_ROCK_OUTPUT);
         dependenciesOutput.toFile().mkdirs();
         try {
+            processed = new HashSet<>();
             ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
             MavenArtifactCopy artifactCopy = new MavenArtifactCopy(dependenciesOutput);
             String baseDir = session.getLocalRepository().getBasedir();
@@ -168,7 +178,20 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
               s.forEach(sourcePath -> {
                   try {
                       Path destinationPath = mavenOutput.resolve(mavenHome.toPath().relativize(sourcePath));
-                      Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+                      if (Files.isDirectory(sourcePath)) {
+                          destinationPath.toFile().mkdirs();
+                          return;
+                      }
+                      if (Files.isSymbolicLink(sourcePath)) {
+                          Path resolvedSourcePath = Files.readSymbolicLink(sourcePath);
+                          if (!resolvedSourcePath.isAbsolute()) {
+                              resolvedSourcePath = sourcePath.getParent().resolve(resolvedSourcePath);
+                          }
+                          sourcePath = resolvedSourcePath;
+                      }
+                      if (Files.exists(sourcePath)) {
+                        Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+                        }
                   } catch (IOException e) {
                       throw new RuntimeException("Failed to copy " + sourcePath, e);
                   }
@@ -209,9 +232,6 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         }
 
         for (Dependency dep : dependencyManagement.getDependencies()) {
-            if (!"import".equals(dep.getScope())) {
-                continue;
-            }
             resolveArtifact(buildingRequest, baseDir, artifactCopy, create(project, dep));
         }
     }
@@ -241,21 +261,30 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         return dep;
     }
 
-    private void resolveArtifact(ProjectBuildingRequest buildingRequest, String baseDir, MavenArtifactCopy artifactCopy, DependableCoordinate coordinate) throws DependencyResolverException, IOException {
-        Iterable<ArtifactResult> results =  getDependencyResolver().resolveDependencies(buildingRequest, coordinate, null);
-        for (ArtifactResult r : results) {
+    private void resolveArtifact(ProjectBuildingRequest buildingRequest, String baseDir, MavenArtifactCopy artifactCopy, DependableCoordinate coordinate) throws IOException {
+        try {
+            Iterable<ArtifactResult> results = getDependencyResolver().resolveDependencies(buildingRequest, coordinate, null);
+            for (ArtifactResult r : results) {
 
-            resolveArtifactMetadata(buildingRequest, baseDir, artifactCopy, r.getArtifact());
+                resolveArtifactMetadata(buildingRequest, baseDir, artifactCopy, r.getArtifact());
 
-            copyArtifacts(baseDir,
-                    r.getArtifact().getGroupId(),
-                    r.getArtifact().getArtifactId(),
-                    r.getArtifact().getVersion(),
-                    artifactCopy);
+                copyArtifacts(baseDir,
+                        r.getArtifact().getGroupId(),
+                        r.getArtifact().getArtifactId(),
+                        r.getArtifact().getVersion(),
+                        artifactCopy);
+            }
+        }
+        catch (DependencyResolverException e) {
+            getLog().warn("Failed to resolve "+ coordinate);
         }
     }
 
     private void resolveArtifactMetadata(ProjectBuildingRequest buildingRequest, String baseDir, MavenArtifactCopy artifactCopy, Artifact r) throws IOException, DependencyResolverException {
+        if (processed.contains(r.toString())) {
+            return;
+        }
+        processed.add(r.toString());
         try {
             File pomFile = r.getFile();
             if (pomFile.getName().endsWith(".jar")) {
@@ -291,6 +320,14 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
             return version;
         }
         String value = matcher.group(1);
+        HashMap<String, String> projectProperties = new HashMap<>();
+        projectProperties.put("project.version", project.getVersion());
+        projectProperties.put("project.groupId", project.getGroupId());
+        projectProperties.put("project.artifactId", project.getArtifactId());
+        String projectValue= projectProperties.get(value);
+        if (projectValue != null) {
+            return projectValue;
+        }
         return String.valueOf(project.getProperties().get(value));
     }
 
