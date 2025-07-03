@@ -131,5 +131,22 @@ public abstract class AbstractRockMojo extends AbstractMojo {
         options.setSlices(slices);
         options.setRockcraftYaml(rockcraftYaml);
         options.setCreateService(createService);
+        options.setNativeImage(isNativeImageRequested());
+    }
+
+    private boolean isNativeImageRequested() {
+        List<String> activeProfiles = session.getRequest().getActiveProfiles();
+        boolean nativeProfileActivated = activeProfiles.stream().anyMatch(profile -> "native".equals(profile));
+
+        boolean nativeCompileGoalRequested = false;
+
+        for (String goal : session.getGoals()) {
+            if (goal.equals("native:compile") ||
+                goal.equals("org.graalvm.buildtools:native-maven-plugin:compile") ||
+                goal.contains(":native:compile")) {
+                nativeCompileGoalRequested = true;
+            }
+        }
+        return nativeProfileActivated && nativeCompileGoalRequested;
     }
 }

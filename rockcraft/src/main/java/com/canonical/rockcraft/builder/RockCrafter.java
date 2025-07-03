@@ -30,7 +30,7 @@ import java.util.Map;
 public class RockCrafter extends AbstractRockCrafter {
 
 
-    private boolean forNativeImage;
+    private boolean nativeImage;
 
     /**
      * Creates RockCrafter
@@ -41,7 +41,7 @@ public class RockCrafter extends AbstractRockCrafter {
      */
     public RockCrafter(RockProjectSettings settings, RockcraftOptions options, List<File> artifacts) {
         super(settings, options, artifacts);
-        this.forNativeImage = options.isNativeImage();
+        this.nativeImage = options.isNativeImage();
     }
 
     /**
@@ -176,7 +176,7 @@ public class RockCrafter extends AbstractRockCrafter {
      */
     private String getProjectCopyOutput(List<String> relativeJars) {
         StringBuilder buffer = new StringBuilder();
-        if (forNativeImage) {
+        if (nativeImage) {
             buffer.append(String.format("cp %s ${CRAFT_PART_INSTALL}\n", relativeJars.get(0)));
         } else {
             buffer.append("mkdir -p ${CRAFT_PART_INSTALL}/jars\n");
@@ -193,7 +193,7 @@ public class RockCrafter extends AbstractRockCrafter {
         HashMap<String, Object> parts = new HashMap<String, Object>();
         parts.put(getSettings().getBuildSystem() + "/rockcraft/dump", getDumpPart(relativeJars));
 
-        if (!forNativeImage) {
+        if (!nativeImage) {
             Map<java.lang.String,java.lang.Object> runtimePart = provider.getRuntimePart(files);
             runtimePart.put("after", new String[]{
                 getSettings().getBuildSystem() + "/rockcraft/dump",
