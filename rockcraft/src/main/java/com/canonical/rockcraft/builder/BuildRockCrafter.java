@@ -87,22 +87,22 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         parts.put("dependencies", createDependenciesPart());
         parts.put("maven-cache", createMavenRepository(settings, options, files));
         parts.put("build-tool", createBuildTool(settings, options));
-        parts.put("build-user", createBuildUser());
         parts.put("entrypoint", createEntrypoint(settings, options));
+        parts.put("maven-settings", createMavenSettings());
         if (settings.getBuildSystem() == BuildSystem.gradle) {
             parts.put("gradle-init", createInitFile());
         }
         return parts;
     }
 
-    private Map<String, Object> createBuildUser() {
+    private Map<String, Object> createMavenSettings() {
         Map<String,Object> part = new HashMap<>();
         part.put("plugin", "nil");
         part.put("source", ".");
-        part.put("overlay-script",
-                "groupadd -R $CRAFT_OVERLAY -g 1000 builder\n" +
-                "useradd --home-dir /home/builder --create-home -R $CRAFT_OVERLAY -M -r -g builder -u 1000 builder\n"+
-                "craftctl-default");
+        String overrideBuild = "mkdir -p ${CRAFT_PART_INSTALL}/home/builder/.m2/\n" +
+                "cp settings.xml ${CRAFT_PART_INSTALL}/home/builder/.m2/\n" +
+                "craftctl default";
+        part.put("override-build", overrideBuild);
         return part;
     }
 
@@ -140,7 +140,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
     }
 
     private void writeResourceFiles() throws IOException {
-        for (String resource : new String[]{"build-gradle.sh", "build-maven.sh", "local-build.gradle"}) {
+        for (String resource : new String[]{"build-gradle.sh", "build-maven.sh", "local-build.gradle", "settings.xml"}) {
             try (InputStream is = getClass().getResourceAsStream(String.format("/com/canonical/rockcraft/builder/%s", resource))) {
                 Path output = getSettings().getRockOutput().resolve(resource);
                 ByteArrayOutputStream data = new ByteArrayOutputStream();
@@ -163,6 +163,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         if (settings.getBuildSystem() == BuildSystem.maven) {
             part.put("stage-packages", new String[] {"maven"});
             part.put("stage", new String[]{
+                    "etc/maven",
                     "usr/share/maven",
                     "usr/share/java",
             });
@@ -189,7 +190,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         String source = settings.getRockOutput().relativize(files.get(0).toPath()).toString();
         part.put("source", source);
         part.put("source-type", "local");
-        part.put("after", new String[]{ "build-user"});
+        part.put("after", new String[]{ "dependencies"});
         String commands = "mkdir -p ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
                 "cp -r * ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
                 "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
@@ -235,7 +236,11 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         overrideCommands.append("\n");
         overrideCommands.append("busybox --install -s ${CRAFT_PART_INSTALL}/usr/bin/\n");
         overrideCommands.append("cd ${CRAFT_PART_INSTALL} && PATH=/usr/bin find . -type f -name java -exec ln -sf --relative {} ${CRAFT_PART_INSTALL}/usr/bin/ \\;\n");
-        overrideCommands.append("mkdir -p ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/ &&  cp /etc/ssl/certs/java/cacerts ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/cacerts");
+        overrideCommands.append("mkdir -p ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/ &&  cp /etc/ssl/certs/java/cacerts ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/cacerts\n");
+        overrideCommands.append("# ignore if group is already created\n");
+        overrideCommands.append("groupadd -f -R ${CRAFT_PART_INSTALL} -g 1000 builder || [[ $? -eq 4 || $? -eq 9 ]]\n");
+        overrideCommands.append("# ignore if user is already created\n");
+        overrideCommands.append("useradd -s /usr/bin/sh --home-dir /home/builder --create-home -R ${CRAFT_PART_INSTALL} -g builder -u 1000 builder || [[ $? -eq 4 || $? -eq 9 ]]\n");
 
         overrideCommands.append("\ncraftctl default\n");
         part.put("override-build", overrideCommands.toString());
