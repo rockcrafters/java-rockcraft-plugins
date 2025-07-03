@@ -102,6 +102,7 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         options.setArchitectures(architectures);
         options.setSlices(slices);
         options.setRockcraftYaml(buildRockcraftYaml);
+        options.setNativeImage(isNativeImageRequested());
     }
 
     /**
@@ -145,5 +146,20 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
                 + artifactId + File.separator
                 + versionId;
         return new File(artifactPath).listFiles();
+    }
+
+    private boolean isNativeImageRequested() {
+        List<String> activeProfiles = session.getRequest().getActiveProfiles();
+        boolean nativeProfileActivated = activeProfiles.stream().anyMatch(profile -> "native".equals(profile));
+
+        boolean nativeCompileGoalRequested = false;
+
+        for (String goal : session.getGoals()) {
+            if (goal.equals("native:compile") ||
+                goal.equals("org.graalvm.buildtools:native-maven-plugin:compile")) {
+                nativeCompileGoalRequested = true;
+            }
+        }
+        return nativeProfileActivated && nativeCompileGoalRequested;
     }
 }

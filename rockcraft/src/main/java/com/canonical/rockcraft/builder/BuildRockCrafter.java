@@ -88,6 +88,10 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         parts.put("maven-cache", createMavenRepository(settings, options, files));
         parts.put("build-tool", createBuildTool(settings, options));
         parts.put("entrypoint", createEntrypoint(settings, options));
+        if (options.isNativeImage()) {
+            parts.put("graalvm-install", createGraalVMInstall(settings, options));
+            parts.put("native-compile-deps", createNativeCompileDeps(settings, options));
+        }
         if (settings.getBuildSystem() == BuildSystem.gradle) {
             parts.put("gradle-init", createInitFile(settings, options));
         }
@@ -103,7 +107,11 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         overrideBuild.append("mkdir -p $CRAFT_PART_INSTALL/usr/bin\n");
 
         if (settings.getBuildSystem() == BuildSystem.maven) {
-            overrideBuild.append("cp build-maven.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
+            if (options.isNativeImage()) {
+                overrideBuild.append("cp build-maven-native.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
+            } else {
+                overrideBuild.append("cp build-maven.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
+            }
         } else if (settings.getBuildSystem() == BuildSystem.gradle) {
             overrideBuild.append("cp build-gradle.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
         } else {
@@ -140,7 +148,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
     }
 
     private void writeResourceFiles() throws IOException {
-        for (String resource : new String[]{"build-gradle.sh", "build-maven.sh", "local-build.gradle"}) {
+        for (String resource : new String[]{"build-gradle.sh", "build-maven.sh", "build-maven-native.sh", "local-build.gradle"}) {
             try (InputStream is = getClass().getResourceAsStream(String.format("/com/canonical/rockcraft/builder/%s", resource))) {
                 Path output = getSettings().getRockOutput().resolve(resource);
                 ByteArrayOutputStream data = new ByteArrayOutputStream();
@@ -157,14 +165,37 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         }
     }
 
+    private Map<String, Object> createNativeCompileDeps(RockProjectSettings settings, BuildRockcraftOptions options) {
+        Map<String, Object> part = new HashMap<>();
+        part.put("plugin", "nil");
+        part.put("stage-packages", new String[] { "gcc", "zlib1g-dev" });
+        part.put("stage", new String[] {
+                "usr/bin/*cc*",
+                "usr/bin/*as",
+                "usr/bin/*ld*",
+                "usr/libexec/gcc/**/*",
+                "usr/lib/**/*",
+                "usr/include/**/*"
+        });
+        return part;
+    }
+
+    private Map<String, Object> createGraalVMInstall(RockProjectSettings settings, BuildRockcraftOptions options) {
+        Map<String,Object> part = new HashMap<>();
+        part.put("plugin", "nil");
+        part.put("stage-snaps", new String[] {"graalvm-jdk/v21/stable"});
+        part.put("stage", new String[] {"graalvm-ce/**/*"});
+        return part;
+    }
     private Map<String, Object> createBuildTool(RockProjectSettings settings, BuildRockcraftOptions options) {
         Map<String,Object> part = new HashMap<>();
         part.put("plugin", "nil");
         if (settings.getBuildSystem() == BuildSystem.maven) {
             part.put("stage-packages", new String[] {"maven"});
+            // workaround
             part.put("stage", new String[]{
-                    "usr/share/maven",
-                    "usr/share/java",
+                    "usr/share/maven/**/*",
+                    "usr/share/java/**/*",
             });
         }
         else if (settings.getBuildSystem() == BuildSystem.gradle) {
@@ -194,6 +225,8 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         commands.append("cp -r * ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.m2/repository/\n");
         commands.append("# workaround https://github.com/canonical/craft-parts/issues/507\n");
         commands.append("chown -R 584792:584792  ${CRAFT_PART_INSTALL}/var/lib/pebble/default\n");
+        //workaround
+        commands.append("chmod -R 777 ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.m2/repository/\n");
         commands.append("craftctl default");
         part.put("override-build", commands.toString());
 

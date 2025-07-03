@@ -14,14 +14,17 @@
 package com.canonical.rockcraft.maven;
 
 import com.canonical.rockcraft.builder.RockCrafter;
+import org.apache.maven.model.Profile;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.rtinfo.RuntimeInformation;
+import org.apache.maven.artifact.Artifact;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Writes rockcraft file to the output directory
@@ -51,13 +54,20 @@ public class CreateRockMojo extends AbstractRockMojo {
         if (projectArtifact == null) {
             throw new MojoExecutionException("Project artifact file is null " + getProject().getArtifact());
         }
-        ArrayList<File> jars = new ArrayList<File>();
-        jars.add(projectArtifact);
 
-        if (jars.isEmpty()) {
+        ArrayList<File> artifacts = new ArrayList<File>();
+
+        if (getOptions().isNativeImage()) {
+            artifacts.add(new File(getProject().getBuild().getDirectory(), getProject().getArtifactId()));
+        } else {
+            artifacts.add(getProject().getArtifact().getFile());
+        }
+
+        if (artifacts.isEmpty()) {
             throw new MojoExecutionException("No project artifacts found.");
         }
-        RockCrafter rockCrafter = new RockCrafter(RockSettingsFactory.createRockProjectSettings(getRuntimeInformation(), getProject()), getOptions(), jars);
+
+        RockCrafter rockCrafter = new RockCrafter(RockSettingsFactory.createRockProjectSettings(getRuntimeInformation(), getProject()), getOptions(), artifacts);
         try {
             rockCrafter.writeRockcraft();
         } catch (IOException e) {
