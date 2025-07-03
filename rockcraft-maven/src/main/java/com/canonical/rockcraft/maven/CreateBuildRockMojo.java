@@ -189,8 +189,7 @@ public final class CreateBuildRockMojo extends AbstractMojo {
 
         for (String goal : session.getGoals()) {
             if (goal.equals("native:compile") ||
-                goal.equals("org.graalvm.buildtools:native-maven-plugin:compile") ||
-                goal.contains(":native:compile")) {
+                goal.equals("org.graalvm.buildtools:native-maven-plugin:compile") {
                 nativeCompileGoalRequested = true;
             }
         }
