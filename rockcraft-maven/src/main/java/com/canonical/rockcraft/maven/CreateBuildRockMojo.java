@@ -9,12 +9,13 @@ import com.canonical.rockcraft.util.MavenArtifactCopy;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
-import org.apache.maven.model.Model;
+import org.apache.maven.model.building.DefaultModelBuilder;
+import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
+import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
-import org.apache.maven.model.building.ModelProblemCollector;
-import org.apache.maven.model.building.ModelProblemCollectorRequest;
-import org.apache.maven.model.interpolation.StringSearchModelInterpolator;
+import org.apache.maven.model.building.ModelBuildingResult;
+import org.apache.maven.model.resolution.ModelResolver;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -25,11 +26,15 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectModelResolver;
 import org.apache.maven.rtinfo.RuntimeInformation;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.impl.RemoteRepositoryManager;
+import org.eclipse.aether.repository.RemoteRepository;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +63,12 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
 
     @Component
     private RuntimeInformation runtimeInformation;
+
+    @Component
+    private RepositorySystem repositorySystem;
+
+    @Component
+    private RemoteRepositoryManager remoteRepositoryManager;
 
     @Parameter(property = "buildPackage")
     private final String buildPackage = "openjdk-21-jdk-headless";
@@ -155,18 +166,43 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
             String baseDir = session.getLocalRepository().getBasedir();
             for (Artifact dep : resolveDependencyArtifacts()) {
                 copyArtifacts(baseDir, dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), artifactCopy);
-                resolveArtifactMetadata(buildingRequest, baseDir, artifactCopy, dep);
+                //resolveArtifactMetadata(buildingRequest, baseDir, artifactCopy, dep);
             }
             for (Artifact plugin : resolvePluginArtifacts()) {
                 copyArtifacts(baseDir, plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), artifactCopy);
-                resolveArtifactMetadata(buildingRequest, baseDir, artifactCopy, plugin);
+                //resolveArtifactMetadata(buildingRequest, baseDir, artifactCopy, plugin);
             }
-            copyMetadataPOMs(getProject(), buildingRequest, baseDir, artifactCopy);
+
+            ProjectBuildingRequest projectBuildingRequest = session.getProjectBuildingRequest();
+
+            // Get the remote repositories for the current project
+            List<RemoteRepository> remoteRepositories = session.getCurrentProject().getRemotePluginRepositories();
+
+            // Create the ModelResolver
+            ModelResolver modelResolver = new ProjectModelResolver(
+                    session.getRepositorySession(),
+                    null, // RequestTrace, can be null
+                    repositorySystem,
+                    remoteRepositoryManager,
+                    remoteRepositories,
+                    ProjectBuildingRequest.RepositoryMerging.POM_DOMINANT,
+                    null // ReactorModelPool, can be null
+            );
+
+            DefaultModelBuilderFactory factory = new DefaultModelBuilderFactory();
+            DefaultModelBuilder builder = factory.newInstance();
+
+            ModelBuildingRequest req = new DefaultModelBuildingRequest();
+            req.setModelResolver(new DelegatingModelResolver(modelResolver, artifactCopy));
+            req.setPomFile(getProject().getFile());
+            req.setSystemProperties(System.getProperties());
+            req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+            ModelBuildingResult builtModel = builder.build(req);
 
             BuildRockCrafter rockCrafter = new BuildRockCrafter(settings, getOptions(), Collections.singletonList(dependenciesOutput.toFile()));
             rockCrafter.writeRockcraft();
         }
-        catch (IOException | DependencyResolverException e) {
+        catch (IOException | DependencyResolverException | ModelBuildingException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
