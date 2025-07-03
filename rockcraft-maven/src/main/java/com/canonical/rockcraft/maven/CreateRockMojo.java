@@ -55,14 +55,9 @@ public class CreateRockMojo extends AbstractRockMojo {
             throw new MojoExecutionException("Project artifact file is null " + getProject().getArtifact());
         }
 
-        // Check if the native profile is activated
-        List<String> activeProfiles = getSession().getRequest().getActiveProfiles();
-        boolean isNativeProfileActive = activeProfiles.stream().anyMatch(profile->"native".equals(profile));
-
         ArrayList<File> artifacts = new ArrayList<File>();
 
-        if (isNativeProfileActive) {
-            getOptions().setNativeImage(true);
+        if (getOptions().isNativeImage()) {
             artifacts.add(new File(getProject().getBuild().getDirectory(), getProject().getArtifactId()));
         } else {
             artifacts.add(getProject().getArtifact().getFile());

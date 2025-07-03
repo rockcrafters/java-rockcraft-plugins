@@ -16,7 +16,7 @@ package com.canonical.rockcraft.builder;
 public class BuildRockcraftOptions extends CommonRockcraftOptions {
     private String[] buildGoals = new String[0];
 
-    private boolean forNativeImage = false;
+    private boolean nativeImage = false;
 
     public BuildRockcraftOptions() {
         super();
@@ -31,11 +31,11 @@ public class BuildRockcraftOptions extends CommonRockcraftOptions {
         this.buildGoals = goal;
     }
 
-    public void setForNativeImage(boolean nativeImage) {
-        this.forNativeImage = nativeImage;
+    public void setNativeImage(boolean nativeImage) {
+        this.nativeImage = nativeImage;
     }
 
-    public boolean isForNativeImage() {
-        return forNativeImage;
+    public boolean isNativeImage() {
+        return nativeImage;
     }
 }

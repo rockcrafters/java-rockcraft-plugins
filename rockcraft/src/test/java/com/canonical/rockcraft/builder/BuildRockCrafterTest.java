@@ -95,7 +95,7 @@ public class BuildRockCrafterTest {
                 false);
         BuildRockcraftOptions options = new BuildRockcraftOptions();
         options.setArchitectures(new RockArchitecture[]{ RockArchitecture.amd64 });
-        options.setForNativeImage(true);
+        options.setNativeImage(true);
 
         File output = tempDir.toPath().resolve("output").toFile();
         output.mkdirs();

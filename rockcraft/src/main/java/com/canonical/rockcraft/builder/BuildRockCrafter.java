@@ -101,7 +101,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
 
         parts.put("build-tool", createBuildTool(settings, options));
         parts.put("entrypoint", createEntrypoint(settings, options));
-        if (options.isForNativeImage()) {
+        if (options.isNativeImage()) {
             parts.put("graalvm-install", createGraalVMInstall(settings, options));
             parts.put("native-compile-deps", createNativeCompileDeps(settings, options));
         }
@@ -131,7 +131,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         overrideBuild.append("mkdir -p $CRAFT_PART_INSTALL/usr/bin\n");
 
         if (settings.getBuildSystem() == BuildSystem.maven) {
-            if (options.isForNativeImage()) {
+            if (options.isNativeImage()) {
                 overrideBuild.append("cp build-maven-native.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
             } else {
                 overrideBuild.append("cp build-maven.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
