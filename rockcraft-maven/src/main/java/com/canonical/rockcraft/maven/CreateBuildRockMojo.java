@@ -145,6 +145,7 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
             String baseDir = session.getLocalRepository().getBasedir();
             for (Artifact dep : resolveDependencyArtifacts()) {
                 copyArtifacts(baseDir, dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), artifactCopy);
+                resolveArtifactMetadata(buildingRequest, baseDir, artifactCopy, dep);
             }
             for (Artifact plugin : resolvePluginArtifacts()) {
                 copyArtifacts(baseDir, plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), artifactCopy);
