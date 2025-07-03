@@ -23,11 +23,18 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashSet;
 
 /**
  * Utility class to copy a file into Maven repository
  */
 public class MavenArtifactCopy {
+
+    /**
+     * A list of already copied artifacts
+     */
+    private HashSet<File> processedFiles = new HashSet<>();
+
     /**
      * Output location for the copy operation
      */
@@ -67,7 +74,11 @@ public class MavenArtifactCopy {
         outputLocation.toFile().mkdirs();
         Path destinationFile = outputLocation.resolve(f.getName());
         Files.copy(f.toPath(), destinationFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-
+        processedFiles.add(f);
+        // do not checksum checksums
+        if (destinationFile.toString().endsWith(".sha1")) {
+            return;
+        }
         try {
             Path digestFile = Paths.get(destinationFile + ".sha1");
             String hash = MavenArtifactCopy.computeHash(destinationFile, "sha1");
@@ -79,5 +90,9 @@ public class MavenArtifactCopy {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean isProcessed(File f) {
+        return processedFiles.contains(f);
     }
 }
