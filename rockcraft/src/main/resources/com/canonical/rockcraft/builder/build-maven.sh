@@ -8,5 +8,4 @@ if [ $# -eq 0 ]; then
 else
   GOAL=$@
 fi
-export HOME=/home/builder
-(cd $WORKDIR && /usr/share/maven/mvn $GOAL)
+(cd $WORKDIR && /usr/share/maven/bin/mvn --settings /home/builder/.m2/settings.xml $GOAL)
