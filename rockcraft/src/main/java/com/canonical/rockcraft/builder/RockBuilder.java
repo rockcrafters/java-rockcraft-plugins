@@ -62,7 +62,11 @@ public class RockBuilder {
         String imageName = String.valueOf(rockcraft.get(IRockcraftNames.ROCKCRAFT_NAME));
         String imageVersion = String.valueOf(rockcraft.get(IRockcraftNames.ROCKCRAFT_VERSION));
         Path rockDestPath = settings.getRockOutput().resolve(IRockcraftNames.ROCK_OUTPUT);
-        for (File file : rockDestPath.toFile().listFiles((dir, file) -> file.endsWith(".rock"))) {
+        File[] f = rockDestPath.toFile().listFiles((dir, file) -> file.endsWith(".rock"));
+        if (f == null) {
+            throw new UnsupportedOperationException("Please set up build-build-rock goal before push-build-rock");
+        }
+        for (File file : f) {
             copyInDocker(file, imageName, imageVersion);
         }
     }
