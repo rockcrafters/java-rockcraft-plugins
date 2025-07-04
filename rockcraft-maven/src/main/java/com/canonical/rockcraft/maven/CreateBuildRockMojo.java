@@ -6,22 +6,18 @@ import com.canonical.rockcraft.builder.IRockcraftNames;
 import com.canonical.rockcraft.builder.RockArchitecture;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 import com.canonical.rockcraft.util.MavenArtifactCopy;
-import org.apache.maven.Maven;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.lifecycle.internal.LifecycleDependencyResolver;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.model.DependencyManagement;
-import org.apache.maven.model.Plugin;
+import org.apache.maven.model.Model;
 import org.apache.maven.model.building.DefaultModelBuilder;
 import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
-import org.apache.maven.model.resolution.ModelResolver;
-import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -30,35 +26,25 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.dependency.resolvers.GoOfflineMojo;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
-import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectModelResolver;
 import org.apache.maven.rtinfo.RuntimeInformation;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
 import org.apache.maven.shared.transfer.dependencies.DefaultDependableCoordinate;
-import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
-import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.resolution.ArtifactRequest;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * Writes build rock rockcraft file to the output directory
@@ -66,9 +52,8 @@ import java.util.stream.Stream;
 @Mojo(name = "create-build-rock", threadSafe = false, requiresProject = true, defaultPhase = LifecyclePhase.PACKAGE)
 public final class CreateBuildRockMojo extends GoOfflineMojo {
 
-    private HashSet<String> processed;
     private final Collection<String> collectionScopes = Arrays.asList("system", "compile", "test", "provided", "runtime");
-    private final Collection<String> resolveScopes = Arrays.asList("compile", "test", "provided", "runtime");
+    private final Collection<String> resolveScopes = Arrays.asList("system", "compile", "test", "provided", "runtime");
 
     @Component
     private LifecycleDependencyResolver lifecycleDependencyResolver;
@@ -174,7 +159,6 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         Path dependenciesOutput = settings.getRockOutput().resolve(IRockcraftNames.DEPENDENCIES_ROCK_OUTPUT);
         dependenciesOutput.toFile().mkdirs();
         try {
-            processed = new HashSet<>();
             // resolve the project
             MavenArtifactCopy artifactCopy = new MavenArtifactCopy(dependenciesOutput);
             String baseDir = session.getLocalRepository().getBasedir();
@@ -221,31 +205,42 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
 
     private Set<Artifact> resolvePlugins() throws DependencyResolverException {
         HashSet<Artifact> arts = new HashSet<>();
-        ArrayList<Dependency> toResolve = new ArrayList<>();
+
         for (org.apache.maven.model.Plugin p : getProject().getBuildPlugins()) {
-            Dependency dep = new Dependency();
-            dep.setGroupId(p.getGroupId());
-            dep.setArtifactId(p.getArtifactId());
-            dep.setVersion(p.getVersion());
-            toResolve.add(dep);
+            if (!p.getDependencies().isEmpty()) {
+                System.out.println("Foo");
+            }
+            DefaultDependableCoordinate dc = new DefaultDependableCoordinate();
+            dc.setGroupId(p.getGroupId());
+            dc.setArtifactId(p.getArtifactId());
+            dc.setVersion(p.getVersion());
+            Iterable<ArtifactResult> result = getDependencyResolver()
+                    .resolveDependencies(newResolveArtifactProjectBuildingRequest(), dc, null);
+            for (ArtifactResult r :  result) {
+                arts.add(r.getArtifact());
+            }
         }
         for (org.apache.maven.model.ReportPlugin p : getProject().getReportPlugins()) {
-            Dependency dep = new Dependency();
-            dep.setGroupId(p.getGroupId());
-            dep.setArtifactId(p.getArtifactId());
-            dep.setVersion(p.getVersion());
-            toResolve.add(dep);
+            DefaultDependableCoordinate dc = new DefaultDependableCoordinate();
+            dc.setGroupId(p.getGroupId());
+            dc.setArtifactId(p.getArtifactId());
+            dc.setVersion(p.getVersion());
+            Iterable<ArtifactResult> result = getDependencyResolver()
+                    .resolveDependencies(newResolveArtifactProjectBuildingRequest(), dc, null);
+            for (ArtifactResult r :  result) {
+                arts.add(r.getArtifact());
+            }
         }
-        Dependency hardcoded = new Dependency();
-        hardcoded.setVersion("3.5.0");
-        hardcoded.setGroupId("org.codehaus.plexus");
-        hardcoded.setArtifactId("plexus-utils");
-        toResolve.add(hardcoded);
+        DefaultDependableCoordinate dc = new DefaultDependableCoordinate();
+        dc.setGroupId("org.codehaus.plexus");
+        dc.setArtifactId("plexus-utils");
+        dc.setVersion("1.1");
         Iterable<ArtifactResult> result = getDependencyResolver()
-                .resolveDependencies(newResolveArtifactProjectBuildingRequest(), toResolve, new ArrayList<>(), null);
+                .resolveDependencies(newResolveArtifactProjectBuildingRequest(), dc, null);
         for (ArtifactResult r :  result) {
             arts.add(r.getArtifact());
         }
+
         return arts;
     }
 
@@ -271,7 +266,8 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         req.setActiveProfileIds(buildingRequest.getActiveProfileIds());
         req.setInactiveProfileIds(buildingRequest.getInactiveProfileIds());
         req.setProfiles(buildingRequest.getProfiles());
-        builder.build(req);
+        ModelBuildingResult modelResult = builder.build(req);
+        modelResult.getEffectiveModel();
     }
 
     private void copyArtifacts(String baseDir, String groupId, String artifactId, String versionId, MavenArtifactCopy artifactCopy) throws IOException {
@@ -288,3 +284,4 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         return new File(artifactPath).listFiles();
     }
 }
+
