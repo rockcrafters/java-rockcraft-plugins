@@ -13,6 +13,7 @@ import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.lifecycle.internal.LifecycleDependencyResolver;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.model.building.DefaultModelBuilder;
 import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
@@ -169,7 +170,6 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         configure();
 
         RockProjectSettings settings = RockSettingsFactory.createBuildRockProjectSettings(getRuntimeInformation(), getProject());
-        copyMaven(settings);
 
         Path dependenciesOutput = settings.getRockOutput().resolve(IRockcraftNames.DEPENDENCIES_ROCK_OUTPUT);
         dependenciesOutput.toFile().mkdirs();
@@ -196,8 +196,7 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
                     myArtifacts);
             myArtifacts.addAll(copy.getArtifacts());
             myArtifacts.addAll(resolveDependencyArtifacts());
-            myArtifacts.addAll(resolvePluginArtifacts());
-
+            myArtifacts.addAll(resolvePlugins());
 
             for (Artifact dep : myArtifacts) {
                 copyArtifacts(baseDir, dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), artifactCopy);
@@ -218,6 +217,36 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         catch (IOException | DependencyResolverException | ModelBuildingException | LifecycleExecutionException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    private Set<Artifact> resolvePlugins() throws DependencyResolverException {
+        HashSet<Artifact> arts = new HashSet<>();
+        ArrayList<Dependency> toResolve = new ArrayList<>();
+        for (org.apache.maven.model.Plugin p : getProject().getBuildPlugins()) {
+            Dependency dep = new Dependency();
+            dep.setGroupId(p.getGroupId());
+            dep.setArtifactId(p.getArtifactId());
+            dep.setVersion(p.getVersion());
+            toResolve.add(dep);
+        }
+        for (org.apache.maven.model.ReportPlugin p : getProject().getReportPlugins()) {
+            Dependency dep = new Dependency();
+            dep.setGroupId(p.getGroupId());
+            dep.setArtifactId(p.getArtifactId());
+            dep.setVersion(p.getVersion());
+            toResolve.add(dep);
+        }
+        Dependency hardcoded = new Dependency();
+        hardcoded.setVersion("3.5.0");
+        hardcoded.setGroupId("org.codehaus.plexus");
+        hardcoded.setArtifactId("plexus-utils");
+        toResolve.add(hardcoded);
+        Iterable<ArtifactResult> result = getDependencyResolver()
+                .resolveDependencies(newResolveArtifactProjectBuildingRequest(), toResolve, new ArrayList<>(), null);
+        for (ArtifactResult r :  result) {
+            arts.add(r.getArtifact());
+        }
+        return arts;
     }
 
     private void copyPOMFiles(MavenArtifactCopy artifactCopy, File pomFile) throws ModelBuildingException {
@@ -245,164 +274,10 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         builder.build(req);
     }
 
-    private void copyMaven(RockProjectSettings settings) throws MojoExecutionException {
-        final Path mavenOutput = settings.getRockOutput().resolve(IRockcraftNames.MAVEN_OUTPUT);
-        try {
-            try (Stream<Path> s = Files.walk(mavenHome.toPath())) {
-              s.forEach(sourcePath -> {
-                  try {
-                      Path destinationPath = mavenOutput.resolve(mavenHome.toPath().relativize(sourcePath));
-                      if (Files.isDirectory(sourcePath)) {
-                          destinationPath.toFile().mkdirs();
-                          return;
-                      }
-                      if (Files.isSymbolicLink(sourcePath)) {
-                          Path resolvedSourcePath = Files.readSymbolicLink(sourcePath);
-                          if (!resolvedSourcePath.isAbsolute()) {
-                              resolvedSourcePath = sourcePath.getParent().resolve(resolvedSourcePath);
-                          }
-                          sourcePath = resolvedSourcePath;
-                      }
-                      if (Files.exists(sourcePath)) {
-                        Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-                        }
-                  } catch (IOException e) {
-                      throw new RuntimeException("Failed to copy " + sourcePath, e);
-                  }
-              });
-            }
-        } catch (IOException e) {
-            throw new MojoExecutionException(e);
-        }
-    }
-
     private void copyArtifacts(String baseDir, String groupId, String artifactId, String versionId, MavenArtifactCopy artifactCopy) throws IOException {
         for (File f : getArtifactFiles(baseDir, groupId, artifactId, versionId)) {
-            if (artifactCopy.isProcessed(f)) {
-                continue;
-            }
-            getLog().info("Copy "+ f);
             artifactCopy.copyToMavenRepository(f, groupId, artifactId, versionId);
         }
-    }
-
-    /**
-     * Copies metadata poms (parent + dependency management)
-     *
-     * @param baseDir - destination
-     * @param artifactCopy - artifactCopy utility
-     */
-    private void copyMetadataPOMs(MavenProject project, ProjectBuildingRequest buildingRequest, String baseDir, MavenArtifactCopy artifactCopy) throws DependencyResolverException, IOException {
-        if (project == null) {
-            return;
-        }
-        // copy parent pom metadata
-        copyParent(project, buildingRequest, baseDir, artifactCopy);
-
-        // copy boms, do not dive into other dependencies
-        DependencyManagement dependencyManagement = project.getOriginalModel().getDependencyManagement();
-        if (dependencyManagement == null) {
-            return;
-        }
-
-        for (Dependency dep : dependencyManagement.getDependencies()) {
-            resolveArtifact(buildingRequest, baseDir, artifactCopy, create(project, dep));
-        }
-    }
-
-    private void copyParent(MavenProject project, ProjectBuildingRequest buildingRequest, String baseDir, MavenArtifactCopy artifactCopy) throws DependencyResolverException, IOException {
-        Artifact art = project.getParentArtifact();
-        if (art == null) {
-            return;
-        }
-
-        String id = art.getArtifactId();
-        if (id == null || id.isEmpty()) {
-            return;
-        }
-        DefaultDependableCoordinate dep = create(art);
-        resolveArtifact(buildingRequest, baseDir, artifactCopy, dep);
-        copyMetadataPOMs(project.getParent(), buildingRequest, baseDir, artifactCopy);
-    }
-
-    private static DefaultDependableCoordinate create(Artifact art) {
-        DefaultDependableCoordinate dep = new DefaultDependableCoordinate();
-        dep.setType(art.getType());
-        dep.setGroupId(art.getGroupId());
-        dep.setArtifactId(art.getArtifactId());
-        dep.setVersion(art.getVersion());
-        dep.setClassifier(art.getClassifier());
-        return dep;
-    }
-
-    private void resolveArtifact(ProjectBuildingRequest buildingRequest, String baseDir, MavenArtifactCopy artifactCopy, DependableCoordinate coordinate) throws IOException {
-        try {
-            Iterable<ArtifactResult> results = getDependencyResolver().resolveDependencies(buildingRequest, coordinate, null);
-            for (ArtifactResult r : results) {
-
-                resolveArtifactMetadata(buildingRequest, baseDir, artifactCopy, r.getArtifact());
-
-                copyArtifacts(baseDir,
-                        r.getArtifact().getGroupId(),
-                        r.getArtifact().getArtifactId(),
-                        r.getArtifact().getVersion(),
-                        artifactCopy);
-            }
-        }
-        catch (DependencyResolverException e) {
-            getLog().warn("Failed to resolve "+ coordinate);
-        }
-    }
-
-    private void resolveArtifactMetadata(ProjectBuildingRequest buildingRequest, String baseDir, MavenArtifactCopy artifactCopy, Artifact r) throws IOException, DependencyResolverException {
-        if (processed.contains(r.toString())) {
-            return;
-        }
-        processed.add(r.toString());
-        try {
-            File pomFile = r.getFile();
-            if (pomFile.getName().endsWith(".jar")) {
-                // replace any sequence starting with . and not containing .
-                pomFile = new File(pomFile.getAbsolutePath().replaceAll("\\.[^.]+$", ".pom"));
-            }
-            if (pomFile.getName().endsWith(".pom") && pomFile.exists()) {
-                ProjectBuildingRequest artifactBuildRequest = newResolveArtifactProjectBuildingRequest();
-                artifactBuildRequest.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-                MavenProject project = projectBuilder.build(pomFile, artifactBuildRequest).getProject();
-                copyMetadataPOMs(project, buildingRequest, baseDir, artifactCopy);
-            }
-        } catch (ProjectBuildingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private DependableCoordinate create(MavenProject project, Dependency dependency) {
-        final DefaultDependableCoordinate result = new DefaultDependableCoordinate();
-        result.setGroupId(getActualValue(project, dependency.getGroupId()));
-        result.setArtifactId(getActualValue(project, dependency.getArtifactId()));
-        result.setVersion(getActualValue(project, dependency.getVersion()));
-        result.setType(dependency.getType());
-        result.setClassifier(dependency.getClassifier());
-        return result;
-    }
-
-    private String getActualValue(MavenProject project, String version) {
-        // property format ${foo}
-        Pattern pattern = Pattern.compile("\\$\\{([^}]+)\\}");
-        Matcher matcher = pattern.matcher(version);
-        if (!matcher.matches()) {
-            return version;
-        }
-        String value = matcher.group(1);
-        HashMap<String, String> projectProperties = new HashMap<>();
-        projectProperties.put("project.version", project.getVersion());
-        projectProperties.put("project.groupId", project.getGroupId());
-        projectProperties.put("project.artifactId", project.getArtifactId());
-        String projectValue= projectProperties.get(value);
-        if (projectValue != null) {
-            return projectValue;
-        }
-        return String.valueOf(project.getProperties().get(value));
     }
 
     private File[] getArtifactFiles(String baseDir, String groupId, String artifactId, String versionId) {
