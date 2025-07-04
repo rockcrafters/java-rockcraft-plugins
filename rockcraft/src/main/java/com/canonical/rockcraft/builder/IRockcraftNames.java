@@ -33,4 +33,8 @@ public interface IRockcraftNames {
      */
     String DEPENDENCIES_ROCK_OUTPUT = "dependencies";
 
+    /**
+     * Rockcraft output for maven installation
+     */
+    String MAVEN_OUTPUT = "maven";
 }

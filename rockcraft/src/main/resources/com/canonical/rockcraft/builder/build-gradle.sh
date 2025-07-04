@@ -8,6 +8,6 @@ if [ $# -eq 0 ]; then
 else
     TASK=$@
 fi
-export HOME=/var/lib/pebble/default
+export HOME=/home/builder
 export GRADLE_USER_HOME=${GRADLE_USER_HOME:-${WORKDIR}/.gradle}
 (cd ${WORKDIR} && gradle $TASK)

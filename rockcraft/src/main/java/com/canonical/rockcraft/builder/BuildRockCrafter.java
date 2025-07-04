@@ -88,10 +88,22 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         parts.put("maven-cache", createMavenRepository(settings, options, files));
         parts.put("build-tool", createBuildTool(settings, options));
         parts.put("entrypoint", createEntrypoint(settings, options));
+        parts.put("maven-settings", createMavenSettings());
         if (settings.getBuildSystem() == BuildSystem.gradle) {
-            parts.put("gradle-init", createInitFile(settings, options));
+            parts.put("gradle-init", createInitFile());
         }
         return parts;
+    }
+
+    private Map<String, Object> createMavenSettings() {
+        Map<String,Object> part = new HashMap<>();
+        part.put("plugin", "nil");
+        part.put("source", ".");
+        String overrideBuild = "mkdir -p ${CRAFT_PART_INSTALL}/home/builder/.m2/\n" +
+                "cp settings.xml ${CRAFT_PART_INSTALL}/home/builder/.m2/\n" +
+                "craftctl default";
+        part.put("override-build", overrideBuild);
+        return part;
     }
 
     private Map<String, Object> createEntrypoint(RockProjectSettings settings, BuildRockcraftOptions options) {
@@ -116,31 +128,19 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         return part;
     }
 
-    private Map<String, Object> createInitFile(RockProjectSettings settings, BuildRockcraftOptions options) {
+    private Map<String, Object> createInitFile() {
         Map<String,Object> part = new HashMap<>();
         part.put("plugin", "nil");
         part.put("source", ".");
-        StringBuilder overrideBuild = new StringBuilder();
-        overrideBuild.append("mkdir -p ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.gradle/init.d/\n");
-        overrideBuild.append("cp local-build.gradle ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.gradle/init.d/\n");
-
-        overrideBuild.append("# workaround https://github.com/canonical/craft-parts/issues/507\n");
-        overrideBuild.append("chown -R 584792:584792  ${CRAFT_PART_INSTALL}/var/lib/pebble/default\n");
-
-        overrideBuild.append("craftctl default");
-        part.put("override-build", overrideBuild.toString());
-
-        HashMap<String, Object> permissions = new HashMap<>();
-        permissions.put("path", "/var/lib/pebble/default");
-        permissions.put("owner", 584792);
-        permissions.put("group", 584792);
-        permissions.put("mode", "755");
-        part.put("permissions", new HashMap[] { permissions });
+        String overrideBuild = "mkdir -p ${CRAFT_PART_INSTALL}/usr/share/gradle/init.d/\n" +
+                "cp local-build.gradle ${CRAFT_PART_INSTALL}/usr/share/gradle/init.d/\n" +
+                "craftctl default";
+        part.put("override-build", overrideBuild);
         return part;
     }
 
     private void writeResourceFiles() throws IOException {
-        for (String resource : new String[]{"build-gradle.sh", "build-maven.sh", "local-build.gradle"}) {
+        for (String resource : new String[]{"build-gradle.sh", "build-maven.sh", "local-build.gradle", "settings.xml"}) {
             try (InputStream is = getClass().getResourceAsStream(String.format("/com/canonical/rockcraft/builder/%s", resource))) {
                 Path output = getSettings().getRockOutput().resolve(resource);
                 ByteArrayOutputStream data = new ByteArrayOutputStream();
@@ -163,6 +163,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         if (settings.getBuildSystem() == BuildSystem.maven) {
             part.put("stage-packages", new String[] {"maven"});
             part.put("stage", new String[]{
+                    "etc/maven",
                     "usr/share/maven",
                     "usr/share/java",
             });
@@ -189,20 +190,12 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         String source = settings.getRockOutput().relativize(files.get(0).toPath()).toString();
         part.put("source", source);
         part.put("source-type", "local");
-        StringBuilder commands = new StringBuilder();
-        commands.append("mkdir -p ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.m2/repository/\n");
-        commands.append("cp -r * ${CRAFT_PART_INSTALL}/var/lib/pebble/default/.m2/repository/\n");
-        commands.append("# workaround https://github.com/canonical/craft-parts/issues/507\n");
-        commands.append("chown -R 584792:584792  ${CRAFT_PART_INSTALL}/var/lib/pebble/default\n");
-        commands.append("craftctl default");
-        part.put("override-build", commands.toString());
-
-        HashMap<String, Object> permissions = new HashMap<>();
-        permissions.put("path", "/var/lib/pebble/default");
-        permissions.put("owner", 584792);
-        permissions.put("group", 584792);
-        permissions.put("mode", "755");
-        part.put("permissions", new HashMap[] { permissions });
+        part.put("after", new String[]{ "dependencies"});
+        String commands = "mkdir -p ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
+                "cp -r * ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
+                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
+                "craftctl default\n";
+        part.put("override-build", commands);
         return part;
     }
 
@@ -243,7 +236,11 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         overrideCommands.append("\n");
         overrideCommands.append("busybox --install -s ${CRAFT_PART_INSTALL}/usr/bin/\n");
         overrideCommands.append("cd ${CRAFT_PART_INSTALL} && PATH=/usr/bin find . -type f -name java -exec ln -sf --relative {} ${CRAFT_PART_INSTALL}/usr/bin/ \\;\n");
-        overrideCommands.append("mkdir -p ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/ &&  cp /etc/ssl/certs/java/cacerts ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/cacerts");
+        overrideCommands.append("mkdir -p ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/ &&  cp /etc/ssl/certs/java/cacerts ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/cacerts\n");
+        overrideCommands.append("# ignore if group is already created\n");
+        overrideCommands.append("groupadd -f -R ${CRAFT_PART_INSTALL} -g 1000 builder || [[ $? -eq 4 || $? -eq 9 ]]\n");
+        overrideCommands.append("# ignore if user is already created\n");
+        overrideCommands.append("useradd -s /usr/bin/sh --home-dir /home/builder --create-home -R ${CRAFT_PART_INSTALL} -g builder -u 1000 builder || [[ $? -eq 4 || $? -eq 9 ]]\n");
 
         overrideCommands.append("\ncraftctl default\n");
         part.put("override-build", overrideCommands.toString());
