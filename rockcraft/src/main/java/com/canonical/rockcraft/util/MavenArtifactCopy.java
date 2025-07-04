@@ -82,14 +82,14 @@ public class MavenArtifactCopy {
         }
         Files.copy(f.toPath(), destinationFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
         processedFiles.add(destinationFile.toFile());
-        // do not checksum checksums
-        if (destinationFile.toString().endsWith(".sha1")) {
-            return;
-        }
         writeDigest(destinationFile);
     }
 
     private static void writeDigest(Path destinationFile) throws IOException {
+        // do not checksum checksums
+        if (destinationFile.toString().endsWith(".sha1")) {
+            return;
+        }
         try {
             Path digestFile = Paths.get(destinationFile + ".sha1");
             String hash = MavenArtifactCopy.computeHash(destinationFile, "sha1");
@@ -103,7 +103,7 @@ public class MavenArtifactCopy {
         }
     }
 
-    public void writePomToMavenRepository(byte[] data, String groupId, String artifactId, String version) throws IOException {
+    public synchronized void writePomToMavenRepository(byte[] data, String groupId, String artifactId, String version) throws IOException {
         Path outputLocation = getDestinationPath(groupId, artifactId, version);
         outputLocation.toFile().mkdirs();
         Path destinationFile = outputLocation.resolve(artifactId +"-"+ version +".pom");

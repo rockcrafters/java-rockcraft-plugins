@@ -6,7 +6,11 @@ import com.canonical.rockcraft.builder.IRockcraftNames;
 import com.canonical.rockcraft.builder.RockArchitecture;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 import com.canonical.rockcraft.util.MavenArtifactCopy;
+import org.apache.maven.Maven;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.lifecycle.internal.LifecycleDependencyResolver;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.building.DefaultModelBuilder;
@@ -16,6 +20,7 @@ import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.model.resolution.ModelResolver;
+import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -35,6 +40,7 @@ import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverE
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,10 +48,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -57,6 +66,11 @@ import java.util.stream.Stream;
 public final class CreateBuildRockMojo extends GoOfflineMojo {
 
     private HashSet<String> processed;
+    private final Collection<String> collectionScopes = Arrays.asList("system", "compile", "test", "provided", "runtime");
+    private final Collection<String> resolveScopes = Arrays.asList("compile", "test", "provided", "runtime");
+
+    @Component
+    private LifecycleDependencyResolver lifecycleDependencyResolver;
 
     @Component
     private ProjectBuilder projectBuilder;
@@ -161,50 +175,74 @@ public final class CreateBuildRockMojo extends GoOfflineMojo {
         dependenciesOutput.toFile().mkdirs();
         try {
             processed = new HashSet<>();
-            ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
+            // resolve the project
             MavenArtifactCopy artifactCopy = new MavenArtifactCopy(dependenciesOutput);
             String baseDir = session.getLocalRepository().getBasedir();
-            for (Artifact dep : resolveDependencyArtifacts()) {
+
+            Set<Artifact> myArtifacts = new HashSet<>();
+            MavenProject copy = new MavenProject(getProject());
+            copy.setArtifactFilter(new ArtifactFilter() {
+                @Override
+                public boolean include(Artifact artifact) {
+                    return true;
+                }
+            });
+            // resolve lifecycle artifacts
+            lifecycleDependencyResolver.resolveProjectDependencies(copy,
+                    collectionScopes,
+                    resolveScopes,
+                    session,
+                    false,
+                    myArtifacts);
+            myArtifacts.addAll(copy.getArtifacts());
+            myArtifacts.addAll(resolveDependencyArtifacts());
+            myArtifacts.addAll(resolvePluginArtifacts());
+
+
+            for (Artifact dep : myArtifacts) {
                 copyArtifacts(baseDir, dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), artifactCopy);
-                //resolveArtifactMetadata(buildingRequest, baseDir, artifactCopy, dep);
+                File pomFile = POMLookup.lookup(dep,
+                        session.getCurrentProject().getRemotePluginRepositories(),
+                        session.getRepositorySession(),
+                        repositorySystem);
+                // copies parent poms
+                copyPOMFiles(artifactCopy, pomFile);
             }
-            for (Artifact plugin : resolvePluginArtifacts()) {
-                copyArtifacts(baseDir, plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), artifactCopy);
-                //resolveArtifactMetadata(buildingRequest, baseDir, artifactCopy, plugin);
-            }
 
-            ProjectBuildingRequest projectBuildingRequest = session.getProjectBuildingRequest();
-
-            // Get the remote repositories for the current project
-            List<RemoteRepository> remoteRepositories = session.getCurrentProject().getRemotePluginRepositories();
-
-            // Create the ModelResolver
-            ModelResolver modelResolver = new ProjectModelResolver(
-                    session.getRepositorySession(),
-                    null, // RequestTrace, can be null
-                    repositorySystem,
-                    remoteRepositoryManager,
-                    remoteRepositories,
-                    ProjectBuildingRequest.RepositoryMerging.POM_DOMINANT,
-                    null // ReactorModelPool, can be null
-            );
-
-            DefaultModelBuilderFactory factory = new DefaultModelBuilderFactory();
-            DefaultModelBuilder builder = factory.newInstance();
-
-            ModelBuildingRequest req = new DefaultModelBuildingRequest();
-            req.setModelResolver(new DelegatingModelResolver(modelResolver, artifactCopy));
-            req.setPomFile(getProject().getFile());
-            req.setSystemProperties(System.getProperties());
-            req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-            ModelBuildingResult builtModel = builder.build(req);
+            // copies poms for parent/dependencies
+            copyPOMFiles(artifactCopy, getProject().getFile());
 
             BuildRockCrafter rockCrafter = new BuildRockCrafter(settings, getOptions(), Collections.singletonList(dependenciesOutput.toFile()));
             rockCrafter.writeRockcraft();
         }
-        catch (IOException | DependencyResolverException | ModelBuildingException e) {
+        catch (IOException | DependencyResolverException | ModelBuildingException | LifecycleExecutionException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    private void copyPOMFiles(MavenArtifactCopy artifactCopy, File pomFile) throws ModelBuildingException {
+        ProjectBuildingRequest buildingRequest = newResolveArtifactProjectBuildingRequest();
+        DefaultModelBuilderFactory factory = new DefaultModelBuilderFactory();
+        DefaultModelBuilder builder = factory.newInstance();
+        DelegatingModelResolver resolver = new DelegatingModelResolver(new ProjectModelResolver(
+                session.getRepositorySession(),
+                null, // RequestTrace, can be null
+                repositorySystem,
+                remoteRepositoryManager,
+                session.getCurrentProject().getRemotePluginRepositories(),
+                ProjectBuildingRequest.RepositoryMerging.POM_DOMINANT,
+                null // ReactorModelPool, can be null
+        ), artifactCopy);
+
+        ModelBuildingRequest req = new DefaultModelBuildingRequest();
+        req.setModelResolver(resolver);
+        req.setPomFile(pomFile);
+        req.setSystemProperties(System.getProperties());
+        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+        req.setActiveProfileIds(buildingRequest.getActiveProfileIds());
+        req.setInactiveProfileIds(buildingRequest.getInactiveProfileIds());
+        req.setProfiles(buildingRequest.getProfiles());
+        builder.build(req);
     }
 
     private void copyMaven(RockProjectSettings settings) throws MojoExecutionException {
