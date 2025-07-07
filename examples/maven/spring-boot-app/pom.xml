@@ -55,6 +55,7 @@
                     <execution>
                         <configuration>
                             <createService>false</createService>
+                            <allowLocal>true</allowLocal>
                         </configuration>
                         <goals>
                             <goal>create-rock</goal>

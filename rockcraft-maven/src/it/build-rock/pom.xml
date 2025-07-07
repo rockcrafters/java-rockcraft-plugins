@@ -29,8 +29,13 @@
                 <artifactId>rockcraft-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <configuration>
+                            <allowLocal>true</allowLocal>
+                        </configuration>
                         <goals>
                             <goal>create-build-rock</goal>
+                            <goal>build-build-rock</goal>
+                            <goal>push-build-rock</goal>
                         </goals>
                     </execution>
                 </executions>
