@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     implementation(libs.snakeyaml)
+    implementation(libs.commons.text)
 
     // Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter)

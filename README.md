@@ -195,6 +195,8 @@ Please see [examples](examples) to try the sample projects.
 
 Install rockcraft: `snap install rockcraft`.
 
+The plugin goals have `rockcraft` prefix. For example, `mvn rockcraft:push-rock` will attempt to build runtime image and push it to the local docker daemon.
+
 To use the plugin, apply the following two steps:
 
 ### 1. Apply the plugin
@@ -217,6 +219,12 @@ Apply the plugin:
                             <goal>build-rock</goal>
                             <!-- pushes rock to the local docker daemon-->
                             <goal>push-rock</goal>
+                            <!-- creates build container rockcraft.yaml -->
+                            <goal>create-build-rock</goal>
+                            <!-- builds build rock image -->
+                            <goal>build-build-rock</goal>
+                            <!-- pushes build rock to the local docker daemon-->
+                            <goal>push-build-rock</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -252,6 +260,26 @@ The plugin supports all [configuration options](#configuration-options).
                     </slices>
                 </configuration>
             </plugin>
+        </plugins>
+```
+
+### 3. Configure the build container (optional)
+
+Build 
+
+```xml
+        <plugins>
+            <plugin>
+                <groupId>io.github.rockcrafters</groupId>
+                <artifactId>rockcraft-maven-plugin</artifactId>
+                ...
+                <configuration>
+                    ...
+                    <!-- allows use of artifacts in the local Maven repository in the build container, default false -->
+                    <allowLocal>true</allowLocal> 
+                </configuration>
+            </plugin>
+        </plugins>
 ```
 
 ## Examples

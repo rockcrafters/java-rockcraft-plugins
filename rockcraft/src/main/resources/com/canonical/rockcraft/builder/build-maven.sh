@@ -4,9 +4,8 @@ if [ $# -gt 0 ]; then
   shift
 fi
 if [ $# -eq 0 ]; then
-  GOAL=package
+  GOAL=!!goal!!
 else
   GOAL=$@
 fi
-export HOME=/var/lib/pebble/default
-(cd $WORKDIR && mvn $GOAL)
+(cd ${WORKDIR} && /usr/share/maven/bin/mvn --settings /home/builder/.m2/settings.xml $GOAL)
