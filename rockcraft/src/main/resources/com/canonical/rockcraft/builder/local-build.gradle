@@ -1,14 +1,36 @@
-apply plugin: AddLocalMaven
-class AddLocalMaven implements Plugin<Gradle> {
+apply plugin: DisableRepos
+class DisableRepos implements Plugin<Gradle> {
     void apply(Gradle gradle) {
+        gradle.settingsEvaluated { settings ->
+            settings.pluginManagement.repositories {
+                clear()
+                maven {
+                    url "file:///home/builder/.m2/repository"
+                }
+            }
+        }
         gradle.beforeSettings { settings ->
             settings.pluginManagement.repositories {
-                mavenLocal()
+                clear()
+                maven {
+                    url "file:///home/builder/.m2/repository"
+                }
             }
         }
         gradle.allprojects {
             project.repositories {
-                mavenLocal()
+                clear()
+                maven {
+                    url "file:///home/builder/.m2/repository"
+                }
+            }
+            project.buildscript {
+                repositories {
+                    clear()
+                    maven {
+                        url "file:///home/builder/.m2/repository"
+                    }
+                }
             }
         }
     }

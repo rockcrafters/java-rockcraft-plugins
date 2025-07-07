@@ -18,6 +18,7 @@ import com.canonical.rockcraft.builder.DependencyOptions;
 import com.canonical.rockcraft.builder.IRockcraftNames;
 import com.canonical.rockcraft.builder.RockBuilder;
 import com.canonical.rockcraft.builder.RockcraftOptions;
+import com.canonical.rockcraft.gradle.dependencies.DependencyExportTask;
 import com.google.gradle.osdetector.OsDetector;
 import com.google.gradle.osdetector.OsDetectorPlugin;
 import org.gradle.api.Plugin;
