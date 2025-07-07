@@ -14,8 +14,18 @@
 package com.canonical.rockcraft.builder;
 
 public class BuildRockcraftOptions extends CommonRockcraftOptions {
+    private String[] buildGoals = new String[0];
+
     public BuildRockcraftOptions() {
         super();
         setBuildPackage("openjdk-21-jdk-headless");
+    }
+
+    public String[] getBuildGoals() {
+        return buildGoals;
+    }
+
+    public void setBuildGoals(String[] goal) {
+        this.buildGoals = goal;
     }
 }

@@ -13,11 +13,13 @@
  */
 package com.canonical.rockcraft.builder;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +45,7 @@ public class BuildRockCrafterTest {
                 false);
         BuildRockcraftOptions options = new BuildRockcraftOptions();
         options.setArchitectures(new RockArchitecture[]{ RockArchitecture.amd64 });
-
+        options.setBuildGoals(new String[] {"package"});
         File output = tempDir.toPath().resolve("output").toFile();
         output.mkdirs();
         List<File> artifacts = new ArrayList<>();
@@ -58,6 +60,15 @@ public class BuildRockCrafterTest {
             assertTrue(parts.containsKey("dependencies"));
             assertTrue(parts.containsKey("maven-cache"));
             assertTrue(parts.containsKey("build-tool"));
+        }
+        Path buildFile = tempDir.toPath().resolve("build-maven.sh");
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(buildFile.toFile())))) {
+            StringBuilder result = new StringBuilder();
+            String line;
+            while ((line = r.readLine())!= null){
+                result.append(line);
+            }
+            assertTrue(result.toString().contains("GOAL=package"), "Goals should be replaced");
         }
 
         assertTrue(true, "The build should succeed");

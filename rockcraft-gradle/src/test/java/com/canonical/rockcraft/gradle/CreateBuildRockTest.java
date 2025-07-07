@@ -69,13 +69,12 @@ public class CreateBuildRockTest extends BaseRockcraftTest {
             Map<String, Object> dependenciesPart =(Map<String, Object>) parts.get("dependencies");
             buildPackages = (List<String>)dependenciesPart.get("build-packages");
             assertTrue(buildPackages.contains("busybox"));
-            assertTrue(buildPackages.contains("openjdk-21-jdk-headless"));
             buildScript = (String)dependenciesPart.get("override-build");
             assertTrue(buildScript.contains("craftctl default"), "default script action present");
 
-            Map<String, Object> cachePart =(Map<String, Object>) parts.get("maven-cache");
-            buildScript = (String)cachePart.get("override-build");
-            assertTrue(buildScript.contains("${CRAFT_PART_INSTALL}/var/lib/pebble/default/.m2/repository/"));
+            Map<String, Object> mavenRepoPart =(Map<String, Object>) parts.get("maven-cache");
+            buildScript = (String)mavenRepoPart.get("override-build");
+            assertTrue(buildScript.contains("${CRAFT_PART_INSTALL}/home/builder/.m2"));
         }
     }
 
