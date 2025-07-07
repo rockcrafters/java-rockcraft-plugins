@@ -46,9 +46,11 @@ public class BuildRockCrafterTest {
         BuildRockcraftOptions options = new BuildRockcraftOptions();
         options.setArchitectures(new RockArchitecture[]{ RockArchitecture.amd64 });
         options.setBuildGoals(new String[] {"package"});
+        options.setWithGradleCache(true);
         File output = tempDir.toPath().resolve("output").toFile();
         output.mkdirs();
         List<File> artifacts = new ArrayList<>();
+        artifacts.add(output);
         artifacts.add(output);
         BuildRockCrafter rockCrafter = new BuildRockCrafter(settings, options, artifacts);
         rockCrafter.writeRockcraft();
@@ -58,6 +60,7 @@ public class BuildRockCrafterTest {
             Map<String, Object> result = yaml.load(r);
             Map<String, Object> parts = (Map<String, Object>) result.get("parts");
             assertTrue(parts.containsKey("dependencies"));
+            assertTrue(parts.containsKey("gradle-user-home"));
             assertTrue(parts.containsKey("maven-cache"));
             assertTrue(parts.containsKey("build-tool"));
         }

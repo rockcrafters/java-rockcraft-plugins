@@ -15,21 +15,31 @@ package com.canonical.rockcraft.gradle;
 
 import com.canonical.rockcraft.builder.BuildRockCrafter;
 import com.canonical.rockcraft.builder.BuildRockcraftOptions;
+import com.canonical.rockcraft.builder.RockProjectSettings;
+import com.canonical.rockcraft.util.BuildRunner;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Task;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.TaskAction;
 
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * CreateBuildRockcraftTask writes rockcraft.yaml for the build rock.
  */
 public abstract class CreateBuildRockcraftTask extends DefaultTask {
+
+    private final Logger logger = Logging.getLogger(CreateBuildRockcraftTask.class);
 
     private final BuildRockcraftOptions options;
 
@@ -49,11 +59,14 @@ public abstract class CreateBuildRockcraftTask extends DefaultTask {
     /**
      * Task action to write rockcraft.yaml for the build rock
      * @throws IOException - failed to write rockcraft.yaml
+     * @throws InterruptedException - build was interrupted
      */
     @TaskAction
     @SuppressWarnings("unchecked")
-    public void writeRockcraft() throws IOException {
-        HashSet<File> artifacts = new HashSet<>();
+    public void writeRockcraft() throws IOException, InterruptedException {
+        RockProjectSettings settings = RockSettingsFactory.createBuildRockProjectSettings(getProject());
+
+        ArrayList<File> artifacts = new ArrayList<>();
         Set<Object> dependsOn = getDependsOn();
         for (Object entry : dependsOn) {
             HashSet<Task> tasks = (HashSet<Task>) entry;
@@ -61,8 +74,29 @@ public abstract class CreateBuildRockcraftTask extends DefaultTask {
                 artifacts.addAll(task.getOutputs().getFiles().getFiles());
             }
         }
-        BuildRockCrafter crafter = new BuildRockCrafter(RockSettingsFactory.createBuildRockProjectSettings(getProject()),
-                options, new ArrayList<>(artifacts));
+        if (options.isWithGradleCache()) {
+            Path gradleBin = getProject().getGradle().getGradleHomeDir().toPath().resolve("bin/gradle");
+            if (!Files.exists(gradleBin)) {
+                throw new UnsupportedOperationException("Unable to export dependencies " +gradleBin + " does not exist!");
+            }
+            Path depUserHome = settings.getRockOutput().resolve(".gradle");
+            createGradleCache(gradleBin, depUserHome);
+            artifacts.add(depUserHome.toFile());
+        }
+        BuildRockCrafter crafter = new BuildRockCrafter(settings, options, artifacts);
         crafter.writeRockcraft();
+    }
+
+    private void createGradleCache(Path gradleBin, Path depUserHome) throws IOException, InterruptedException {
+        ArrayList<String> args = new ArrayList<>(Arrays.asList(gradleBin.toString(),
+                "--no-daemon",
+                "--gradle-user-home",
+                depUserHome.toString()));
+        args.addAll(Arrays.asList(options.getBuildGoals()));
+        int ret = BuildRunner.runBuild(logger::lifecycle, getProject().getRootDir(),
+                args);
+        if (ret != 0) {
+            throw new UnsupportedOperationException("Failed to build task '"+ args.stream().collect(Collectors.joining(" ")) + "'" );
+        }
     }
 }

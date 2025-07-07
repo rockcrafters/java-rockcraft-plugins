@@ -94,6 +94,9 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         if (settings.getBuildSystem() == BuildSystem.maven) {
             parts.put("maven-settings", createMavenSettings());
         } else if (settings.getBuildSystem() == BuildSystem.gradle) {
+            if (options.isWithGradleCache()) {
+                parts.put("gradle-cache", createGradleCache());
+            }
             parts.put("gradle-init", createInitFile());
         } else {
             throw new UnsupportedOperationException("Unknown build system " + settings.getBuildSystem());
@@ -101,10 +104,22 @@ public class BuildRockCrafter extends AbstractRockCrafter {
 
         parts.put("build-tool", createBuildTool(settings, options));
         parts.put("entrypoint", createEntrypoint(settings, options));
-        if (settings.getBuildSystem() == BuildSystem.gradle) {
-            parts.put("gradle-init", createInitFile());
-        }
         return parts;
+    }
+
+    private Map<String, Object> createGradleCache(RockProjectSettings settings, BuildRockcraftOptions options, List<File> files) {
+        Map<String, Object> part = new HashMap<>();
+        part.put("plugin", "nil");
+        String source = settings.getRockOutput().relativize(files.get(1).toPath()).toString();
+        part.put("source", source);
+        part.put("source-type", "local");
+        part.put("after", new String[]{"dependencies"});
+        String commands = "mkdir -p ${CRAFT_PART_INSTALL}/home/builder/.gradle/\n" +
+                "cp -r * ${CRAFT_PART_INSTALL}/home/builder/.gradle/\n" +
+                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
+                "craftctl default\n";
+        part.put("override-build", commands);
+        return part;
     }
 
     private Map<String, Object> createMavenSettings() {
