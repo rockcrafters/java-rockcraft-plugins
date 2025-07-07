@@ -18,6 +18,7 @@ import com.canonical.rockcraft.builder.DependencyOptions;
 import com.canonical.rockcraft.builder.IRockcraftNames;
 import com.canonical.rockcraft.builder.RockBuilder;
 import com.canonical.rockcraft.builder.RockcraftOptions;
+import com.canonical.rockcraft.gradle.dependencies.DependencyExportTask;
 import com.google.gradle.osdetector.OsDetector;
 import com.google.gradle.osdetector.OsDetectorPlugin;
 import org.gradle.api.Plugin;
@@ -85,7 +86,7 @@ public class RockcraftPlugin implements Plugin<Project> {
                 .register("create-build-rock", CreateBuildRockcraftTask.class, buildOptions);
         project.getTasks()
                 .getByName("create-build-rock")
-                .dependsOn(project.getTasksByName("dependencies-export", false));
+                .dependsOn(exportTask);
         project.getTasks()
                 .register("build-build-rock", BuildBuildRockcraftTask.class, buildOptions);
         project.getTasks()

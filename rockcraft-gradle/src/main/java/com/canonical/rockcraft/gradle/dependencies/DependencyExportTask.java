@@ -11,7 +11,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.canonical.rockcraft.gradle;
+package com.canonical.rockcraft.gradle.dependencies;
 
 import com.canonical.rockcraft.builder.DependencyOptions;
 import org.gradle.api.DefaultTask;

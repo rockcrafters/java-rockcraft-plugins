@@ -11,7 +11,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.canonical.rockcraft.gradle;
+package com.canonical.rockcraft.gradle.dependencies;
 
 import org.gradle.api.artifacts.component.ComponentIdentifier;
 
@@ -23,11 +23,26 @@ import java.util.Set;
 public class DependencyResolutionResult {
     private Set<ComponentIdentifier> dependencies;
     private Set<ComponentIdentifier> dependencyManagement;
+
+    /**
+     * Result of dependency resolution
+     * @param dependencies - direct dependencies
+     * @param dependencyManagement - dependency management boms
+     */
     public DependencyResolutionResult(Set<ComponentIdentifier> dependencies, Set<ComponentIdentifier> dependencyManagement) {
         this.dependencies = dependencies;
         this.dependencyManagement = dependencyManagement;
     }
 
+    /**
+     * Get direct dependencies
+     * @return direct dependencies
+     */
     public Set<ComponentIdentifier> getDependencies() { return this.dependencies; }
+
+    /**
+     * Get boms
+     * @return project boms
+     */
     public Set<ComponentIdentifier> getDependencyManagement() { return this.dependencyManagement; }
 }
