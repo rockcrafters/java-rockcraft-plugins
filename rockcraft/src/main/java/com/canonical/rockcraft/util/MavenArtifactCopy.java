@@ -41,7 +41,7 @@ public class MavenArtifactCopy {
         this.outputLocationRoot = outputLocationRoot;
     }
 
-    static String computeHash(Path filePath, String alg) throws IOException, NoSuchAlgorithmException {
+    private static String computeHash(Path filePath, String alg) throws IOException, NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance(alg);
         byte[] bytes = Files.readAllBytes(filePath);
         digest.update(bytes, 0, bytes.length);
@@ -53,21 +53,32 @@ public class MavenArtifactCopy {
         return hexString.toString();
     }
 
+    private Path getDestinationPath(String group, String name, String version) {
+        return outputLocationRoot.resolve(String.format("%s/%s/%s", group.replace('.', '/'), name, version));
+    }
+
     /**
      * Copy file to the maven repository and write file's sha1
-     *
+     * synchronized to avoid writing the same file from multiple resolvers
      * @param f       - source file
      * @param group   - maven group id
      * @param name    - maven artifact name
      * @param version - maven artifact version
      * @throws IOException - failed to copy the artifact
      */
-    public void copyToMavenRepository(File f, String group, String name, String version) throws IOException {
-        Path outputLocation = outputLocationRoot.resolve(String.format("%s/%s/%s", group.replace('.', '/'), name, version));
+    public synchronized void copyToMavenRepository(File f, String group, String name, String version) throws IOException {
+        Path outputLocation = getDestinationPath(group, name, version);
         outputLocation.toFile().mkdirs();
         Path destinationFile = outputLocation.resolve(f.getName());
         Files.copy(f.toPath(), destinationFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+        writeDigest(destinationFile);
+    }
 
+    private static void writeDigest(Path destinationFile) throws IOException {
+        // do not checksum checksums
+        if (destinationFile.toString().endsWith(".sha1")) {
+            return;
+        }
         try {
             Path digestFile = Paths.get(destinationFile + ".sha1");
             String hash = MavenArtifactCopy.computeHash(destinationFile, "sha1");
