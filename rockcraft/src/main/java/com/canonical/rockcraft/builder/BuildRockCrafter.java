@@ -171,6 +171,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
 
     private String replaceMacros(String content) {
         HashMap<String, String> replacements = new HashMap<>();
+        replacements.put("gradle-user-home", "export GRADLE_USER_HOME=${WORKDIR}/.gradle");
         replacements.put("goal",
                 Arrays.stream(((BuildRockcraftOptions) getOptions()).getBuildGoals()).
                         collect(Collectors.joining(" ")));

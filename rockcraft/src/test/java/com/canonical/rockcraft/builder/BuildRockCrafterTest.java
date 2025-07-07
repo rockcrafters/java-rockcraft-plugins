@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -61,16 +62,25 @@ public class BuildRockCrafterTest {
             assertTrue(parts.containsKey("maven-cache"));
             assertTrue(parts.containsKey("build-tool"));
         }
-        Path buildFile = tempDir.toPath().resolve("build-maven.sh");
+        String result = readFile("build-maven.sh");
+        assertTrue(result.contains("GOAL=package"), "Goals should be replaced");
+        assertFalse(result.contains("!!"));
+
+        result = readFile("build-gradle.sh");
+        assertFalse(result.contains("!!"));
+
+        assertTrue(true, "The build should succeed");
+    }
+
+    private String readFile(String file) throws IOException {
+        Path buildFile = tempDir.toPath().resolve(file);
+        StringBuilder result = new StringBuilder();
         try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(buildFile.toFile())))) {
-            StringBuilder result = new StringBuilder();
             String line;
             while ((line = r.readLine())!= null){
                 result.append(line);
             }
-            assertTrue(result.toString().contains("GOAL=package"), "Goals should be replaced");
         }
-
-        assertTrue(true, "The build should succeed");
+        return result.toString();
     }
 }
