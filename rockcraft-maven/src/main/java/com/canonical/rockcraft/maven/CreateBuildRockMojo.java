@@ -7,6 +7,7 @@ import com.canonical.rockcraft.builder.RockArchitecture;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 import com.canonical.rockcraft.util.BuildRunner;
 import com.canonical.rockcraft.util.POMUtil;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -43,6 +44,9 @@ public final class CreateBuildRockMojo extends AbstractMojo {
 
     @Component
     private MavenProject project;
+
+    @Parameter(defaultValue = "${session}", readonly = true, required = true)
+    private MavenSession session;
 
     @Parameter(property = "buildPackage")
     private final String buildPackage = "openjdk-21-jdk-headless";
