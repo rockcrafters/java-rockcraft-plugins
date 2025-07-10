@@ -83,4 +83,38 @@ public class BuildRockCrafterTest {
         }
         return result.toString();
     }
+
+    @Test
+    public void testGenerateNativeImageBuildRock() throws IOException {
+        RockProjectSettings settings = new RockProjectSettings(BuildSystem.maven,
+                "8.12",
+                "project-name",
+                "project-version",
+                tempDir.toPath(),
+                tempDir.toPath(),
+                false);
+        BuildRockcraftOptions options = new BuildRockcraftOptions();
+        options.setArchitectures(new RockArchitecture[]{ RockArchitecture.amd64 });
+        options.setNativeImage(true);
+
+        File output = tempDir.toPath().resolve("output").toFile();
+        output.mkdirs();
+        List<File> artifacts = new ArrayList<>();
+        artifacts.add(output);
+        BuildRockCrafter rockCrafter = new BuildRockCrafter(settings, options, artifacts);
+        rockCrafter.writeRockcraft();
+
+        Yaml yaml = new Yaml();
+        try (Reader r = new InputStreamReader(new FileInputStream(new File(tempDir, "rockcraft.yaml")))){
+            Map<String, Object> result = yaml.load(r);
+            Map<String, Object> parts = (Map<String, Object>) result.get("parts");
+            assertTrue(parts.containsKey("dependencies"));
+            assertTrue(parts.containsKey("maven-cache"));
+            assertTrue(parts.containsKey("build-tool"));
+            assertTrue(parts.containsKey("graalvm-install"));
+            assertTrue(parts.containsKey("native-compile-deps"));
+        }
+
+        assertTrue(true, "The build should succeed");
+    }
 }
