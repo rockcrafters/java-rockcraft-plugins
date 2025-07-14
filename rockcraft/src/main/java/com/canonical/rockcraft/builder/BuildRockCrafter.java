@@ -101,6 +101,10 @@ public class BuildRockCrafter extends AbstractRockCrafter {
 
         parts.put("build-tool", createBuildTool(settings, options));
         parts.put("entrypoint", createEntrypoint(settings, options));
+        if (options.isNativeImage()) {
+            parts.put("graalvm-install", createGraalVMInstall(settings, options));
+            parts.put("native-compile-deps", createNativeCompileDeps(settings, options));
+        }
         if (settings.getBuildSystem() == BuildSystem.gradle) {
             parts.put("gradle-init", createInitFile());
         }
@@ -127,7 +131,11 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         overrideBuild.append("mkdir -p $CRAFT_PART_INSTALL/usr/bin\n");
 
         if (settings.getBuildSystem() == BuildSystem.maven) {
-            overrideBuild.append("cp build-maven.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
+            if (options.isNativeImage()) {
+                overrideBuild.append("cp build-maven-native.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
+            } else {
+                overrideBuild.append("cp build-maven.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
+            }
         } else if (settings.getBuildSystem() == BuildSystem.gradle) {
             overrideBuild.append("cp build-gradle.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
         } else {
@@ -152,7 +160,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
     }
 
     private void writeResourceFiles() throws IOException {
-        for (String resource : new String[]{"build-gradle.sh", "build-maven.sh", "local-build.gradle", "settings.xml"}) {
+        for (String resource : new String[]{"build-gradle.sh", "build-maven.sh", "local-build.gradle", "settings.xml", "build-maven-native.sh"}) {
             try (InputStream is = getClass().getResourceAsStream(String.format("/com/canonical/rockcraft/builder/%s", resource))) {
                 Path output = getSettings().getRockOutput().resolve(resource);
                 ByteArrayOutputStream data = new ByteArrayOutputStream();
@@ -177,6 +185,48 @@ public class BuildRockCrafter extends AbstractRockCrafter {
                         collect(Collectors.joining(" ")));
         StringSubstitutor substitutor = new StringSubstitutor(replacements, "!!", "!!");
         return substitutor.replace(content);
+    }
+
+    private Map<String, Object> createNativeCompileDeps(RockProjectSettings settings, BuildRockcraftOptions options) {
+        Map<String, Object> part = new HashMap<>();
+        part.put("plugin", "nil");
+        part.put("stage-packages", new String[] { "gcc", "zlib1g-dev" });
+
+       /* Files installed by gcc needed to be explicitly staged because there is an overlap between what
+          we stage here and what is staged in the `dependencies` part, using chisel slice definitions.
+          Moreover, gcc cannot be staged in `dependencies` because it does not have a chisel slice
+          definition. So, we selectively stage what native-image needs.
+        */
+        part.put("stage", new String[]{
+                // compiler
+                "usr/bin/*gcc*",
+
+                // assembler
+                "usr/bin/*as*",
+
+                // linker
+                "usr/bin/*ld*",
+
+                // C runtime libraries
+                "usr/libexec/gcc/x86_64-linux-gnu/13/*",
+                "usr/lib/x86_64-linux-gnu/*",
+                "usr/lib/gcc/x86_64-linux-gnu/13/*",
+
+                // C headers
+                "usr/include/",
+                "usr/lib/gcc/x86_64-linux-gnu/13/include/",
+                "usr/include/linux/"
+        });
+
+        return part;
+    }
+
+    private Map<String, Object> createGraalVMInstall(RockProjectSettings settings, BuildRockcraftOptions options) {
+        Map<String,Object> part = new HashMap<>();
+        part.put("plugin", "nil");
+        part.put("stage-snaps", new String[] {"graalvm-jdk/v21/stable"});
+        part.put("stage", new String[] {"graalvm-ce/**/*"});
+        return part;
     }
 
     private Map<String, Object> createBuildTool(RockProjectSettings settings, BuildRockcraftOptions options) {

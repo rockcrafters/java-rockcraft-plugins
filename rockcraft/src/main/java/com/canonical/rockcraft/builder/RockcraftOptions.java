@@ -23,6 +23,7 @@ public class RockcraftOptions extends CommonRockcraftOptions {
     private String command = "";
     private boolean createService = true;
     private String distTask;
+    private boolean nativeImage = false;
 
     /**
      * Construct RockcraftOptions
@@ -120,4 +121,20 @@ public class RockcraftOptions extends CommonRockcraftOptions {
         this.distTask = distTask;
     }
 
+     /* Get whether this is a native-image request
+     *
+     * @return default false
+     */
+    public boolean isNativeImage() {
+        return nativeImage;
+    }
+
+    /**
+     * Enable or disable native image creation
+     *
+     * @param nativeImage - whether to create a native image
+     */
+    public void setNativeImage(boolean nativeImage) {
+        this.nativeImage = nativeImage;
+    }
 }

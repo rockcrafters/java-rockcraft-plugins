@@ -21,6 +21,7 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
+import org.apache.maven.execution.MavenSession;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,9 @@ public abstract class AbstractRockMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
+
+    @Parameter(defaultValue = "${session}", readonly = true, required = true)
+    private MavenSession session;
 
     @Component
     private RuntimeInformation runtimeInformation;
@@ -98,6 +102,10 @@ public abstract class AbstractRockMojo extends AbstractMojo {
         return project;
     }
 
+    protected MavenSession getSession() {
+        return session;
+    }
+
     /**
      * Returns runtime information for Maven
      *
@@ -123,5 +131,21 @@ public abstract class AbstractRockMojo extends AbstractMojo {
         options.setSlices(slices);
         options.setRockcraftYaml(rockcraftYaml);
         options.setCreateService(createService);
+        options.setNativeImage(isNativeImageRequested());
+    }
+
+    private boolean isNativeImageRequested() {
+        List<String> activeProfiles = session.getRequest().getActiveProfiles();
+        boolean nativeProfileActivated = activeProfiles.stream().anyMatch(profile -> "native".equals(profile));
+
+        boolean nativeCompileGoalRequested = false;
+
+        for (String goal : session.getGoals()) {
+            if (goal.equals("native:compile") ||
+                goal.equals("org.graalvm.buildtools:native-maven-plugin:compile")) {
+                nativeCompileGoalRequested = true;
+            }
+        }
+        return nativeProfileActivated && nativeCompileGoalRequested;
     }
 }

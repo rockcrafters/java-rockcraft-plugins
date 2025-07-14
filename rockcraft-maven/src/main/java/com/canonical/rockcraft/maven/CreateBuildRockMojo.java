@@ -7,6 +7,7 @@ import com.canonical.rockcraft.builder.RockArchitecture;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 import com.canonical.rockcraft.util.BuildRunner;
 import com.canonical.rockcraft.util.POMUtil;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -43,6 +44,9 @@ public final class CreateBuildRockMojo extends AbstractMojo {
 
     @Component
     private MavenProject project;
+
+    @Parameter(defaultValue = "${session}", readonly = true, required = true)
+    private MavenSession session;
 
     @Parameter(property = "buildPackage")
     private final String buildPackage = "openjdk-21-jdk-headless";
@@ -130,6 +134,7 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         options.setSlices(slices);
         options.setRockcraftYaml(buildRockcraftYaml);
         options.setBuildGoals(buildGoals);
+        options.setNativeImage(isNativeImageRequested());
     }
 
     /**
@@ -178,6 +183,21 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         catch (IOException | InterruptedException | ParserConfigurationException | SAXException | TransformerException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    private boolean isNativeImageRequested() {
+        List<String> activeProfiles = session.getRequest().getActiveProfiles();
+        boolean nativeProfileActivated = activeProfiles.stream().anyMatch(profile -> "native".equals(profile));
+
+        boolean nativeCompileGoalRequested = false;
+
+        for (String goal : session.getGoals()) {
+            if (goal.equals("native:compile") ||
+                goal.equals("org.graalvm.buildtools:native-maven-plugin:compile")) {
+                nativeCompileGoalRequested = true;
+            }
+        }
+        return nativeProfileActivated && nativeCompileGoalRequested;
     }
 }
 
