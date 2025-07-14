@@ -191,18 +191,28 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         Map<String, Object> part = new HashMap<>();
         part.put("plugin", "nil");
         part.put("stage-packages", new String[] { "gcc", "zlib1g-dev" });
+
+       /* Files installed by gcc needed to be explicitly staged because there is an overlap between what
+          we stage here and what is staged in the `dependencies` part, using chisel slice definitions.
+          Moreover, gcc cannot be staged in `dependencies` because it does not have a chisel slice
+          definition. So, we selectively stage what native-image needs.
+        */
         part.put("stage", new String[]{
-                "usr/bin/gcc",
-                "usr/bin/gcc-13",
-                "usr/bin/x86_64-linux-gnu-gcc-13",
-                "usr/bin/as",
-                "usr/bin/x86_64-linux-gnu-as",
-                "usr/bin/ld",
-                "usr/bin/x86_64-linux-gnu-ld",
-                "usr/bin/x86_64-linux-gnu-ld.bfd",
+                // compiler
+                "usr/bin/*gcc*",
+
+                // assembler
+                "usr/bin/*as*",
+
+                // linker
+                "usr/bin/*ld*",
+
+                // C runtime libraries
                 "usr/libexec/gcc/x86_64-linux-gnu/13/*",
                 "usr/lib/x86_64-linux-gnu/*",
                 "usr/lib/gcc/x86_64-linux-gnu/13/*",
+
+                // C headers
                 "usr/include/",
                 "usr/lib/gcc/x86_64-linux-gnu/13/include/",
                 "usr/include/linux/"
