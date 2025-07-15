@@ -54,13 +54,13 @@ To use the plugin, apply the following two steps:
 **Groovy**
 
     plugins {
-        id 'io.github.rockcrafters.rockcraft' version '1.1.3'
+        id 'io.github.rockcrafters.rockcraft' version '1.2.0'
     }
 
 **Kotlin**
 
     plugins {
-        id("io.github.rockcrafters.rockcraft") version "1.1.3"
+        id("io.github.rockcrafters.rockcraft") version "1.2.0"
     }
 
 ##### Alternatively, you can use the `buildscript` DSL:
@@ -74,7 +74,7 @@ To use the plugin, apply the following two steps:
             }
         }
         dependencies {
-            classpath 'io.github.rockcrafters.rockcraft:1.1.3'
+            classpath 'io.github.rockcrafters.rockcraft:1.2.0'
         }
     }
     apply plugin: 'io.github.rockcrafters.rockcraft-plugin'
@@ -88,7 +88,7 @@ To use the plugin, apply the following two steps:
             }
         }
         dependencies {
-            classpath("io.github.rockcrafters.rockcraft:1.1.3")
+            classpath("io.github.rockcrafters.rockcraft:1.2.0")
         }
     }
     apply(plugin = "io.github.rockcrafters.rockcraft")
