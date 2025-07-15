@@ -6,7 +6,7 @@ junit-jupiter = "5.13.3"
 commons-text = "1.13.1"
 osdetector = "1.7.3"
 snakeyaml = "2.4"
-maven-model = "3.9.10"
+maven-model = "3.9.11"
 
 [libraries]
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
