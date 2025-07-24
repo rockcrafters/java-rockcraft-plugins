@@ -3,7 +3,7 @@
 
 [versions]
 junit-jupiter = "5.13.3"
-commons-text = "1.13.1"
+commons-text = "1.14.0"
 osdetector = "1.7.3"
 snakeyaml = "2.4"
 maven-model = "3.9.11"
