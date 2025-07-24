@@ -1,0 +1,10 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal {}
+        maven {
+            url System.getProperty('user.home') + '/.m2/repository'
+        }
+    }
+}
+
+rootProject.name = 'spring-app-native'

@@ -137,7 +137,11 @@ public class BuildRockCrafter extends AbstractRockCrafter {
                 overrideBuild.append("cp build-maven.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
             }
         } else if (settings.getBuildSystem() == BuildSystem.gradle) {
-            overrideBuild.append("cp build-gradle.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
+            if (options.isNativeImage()) {
+               overrideBuild.append("cp build-gradle-native.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
+            } else {
+                overrideBuild.append("cp build-gradle.sh $CRAFT_PART_INSTALL/usr/bin/build\n");
+            }
         } else {
             throw new IllegalArgumentException("Unknown build system");
         }
@@ -160,7 +164,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
     }
 
     private void writeResourceFiles() throws IOException {
-        for (String resource : new String[]{"build-gradle.sh", "build-maven.sh", "local-build.gradle", "settings.xml", "build-maven-native.sh"}) {
+        for (String resource : new String[]{"build-gradle.sh", "build-maven.sh", "local-build.gradle", "settings.xml", "build-maven-native.sh", "build-gradle-native.sh"}) {
             try (InputStream is = getClass().getResourceAsStream(String.format("/com/canonical/rockcraft/builder/%s", resource))) {
                 Path output = getSettings().getRockOutput().resolve(resource);
                 ByteArrayOutputStream data = new ByteArrayOutputStream();

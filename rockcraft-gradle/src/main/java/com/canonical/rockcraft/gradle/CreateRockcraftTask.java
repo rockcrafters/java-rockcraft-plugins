@@ -48,11 +48,23 @@ public abstract class CreateRockcraftTask extends AbstractRockcraftTask {
     @TaskAction
     public void writeRockcraft() {
         HashSet<File> artifacts = new HashSet<>();
-        Set<Object> dependsOn = getDependsOn();
-        for (Object entry : dependsOn) {
-            HashSet<Task> tasks = (HashSet<Task>) entry;
-            for (Task task : tasks) {
-                artifacts.addAll(task.getOutputs().getFiles().getFiles());
+
+        if (getOptions().isNativeImage()) {
+            Task nativeCompileTask = getProject().getTasks().getByName("nativeCompile");
+            File nativeDir = nativeCompileTask.getOutputs().
+                    getFiles().getFiles().
+                    stream().
+                    findFirst().
+                    get();
+            String nativeImageName = getProject().getRootProject().getName();
+            artifacts.add(new File(nativeDir, nativeImageName));
+        } else {
+            Set<Object> dependsOn = getDependsOn();
+            for (Object entry : dependsOn) {
+                HashSet<Task> tasks = (HashSet<Task>) entry;
+                for (Task task : tasks) {
+                    artifacts.addAll(task.getOutputs().getFiles().getFiles());
+                }
             }
         }
 
