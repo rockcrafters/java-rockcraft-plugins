@@ -247,7 +247,11 @@ public class RockCrafter extends AbstractRockCrafter {
         String command = ((RockcraftOptions)getOptions()).getCommand();
         if (command == null || command.trim().isEmpty()) {
             if (relativeJars.size() == 1) {
-                command = String.format("/usr/bin/java -jar /jars/%s", Paths.get(relativeJars.iterator().next()).getFileName().toString());
+                if (nativeImage) {
+                    command = "/" + Paths.get(relativeJars.iterator().next()).getFileName().toString();
+                } else {
+                    command = String.format("/usr/bin/java -jar /jars/%s", Paths.get(relativeJars.iterator().next()).getFileName().toString());
+                }
             } else {
                 StringBuffer message = new StringBuffer();
                 message.append("[ ");

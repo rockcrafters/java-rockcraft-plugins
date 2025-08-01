@@ -82,6 +82,8 @@ public class RockcraftPlugin implements Plugin<Project> {
         });
 
         BuildRockcraftOptions buildOptions = project.getExtensions().create("buildRockcraft", BuildRockcraftOptions .class);
+        buildOptions.setNativeImage(isNativeCompile(project));
+
         project.getTasks()
                 .register("create-build-rock", CreateBuildRockcraftTask.class, buildOptions);
         project.getTasks()
@@ -134,6 +136,8 @@ public class RockcraftPlugin implements Plugin<Project> {
 
         project.getTasks().register("push-rock", PushRockcraftTask.class, options);
 
+        options.setNativeImage(isNativeCompile(project));
+
         TaskProvider<BuildRockcraftTask> build = project.getTasks().register("build-rock", BuildRockcraftTask.class, options);
         TaskProvider<CreateRockcraftTask> create = project.getTasks().register("create-rock", CreateRockcraftTask.class, options);
 
@@ -149,5 +153,9 @@ public class RockcraftPlugin implements Plugin<Project> {
 
         project.getTasks().getByName("create-rock")
                 .dependsOn(tasks);
+    }
+
+    private boolean isNativeCompile(Project project) {
+        return project.getGradle().getStartParameter().getTaskNames().contains("nativeCompile");
     }
 }
