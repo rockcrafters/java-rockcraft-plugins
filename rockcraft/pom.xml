@@ -2,7 +2,7 @@
     <parent>
         <groupId>io.github.rockcrafters</groupId>
         <artifactId>rockcraft-parent</artifactId>
-        <version>1.2.0</version>
+        <version>1.2.1</version>
     </parent>
     <name>Rockcraft common library</name>
     <description>
