@@ -54,13 +54,13 @@ To use the plugin, apply the following two steps:
 **Groovy**
 
     plugins {
-        id 'io.github.rockcrafters.rockcraft' version '1.2.0'
+        id 'io.github.rockcrafters.rockcraft' version '1.2.1'
     }
 
 **Kotlin**
 
     plugins {
-        id("io.github.rockcrafters.rockcraft") version "1.2.0"
+        id("io.github.rockcrafters.rockcraft") version "1.2.1"
     }
 
 ##### Alternatively, you can use the `buildscript` DSL:
@@ -74,7 +74,7 @@ To use the plugin, apply the following two steps:
             }
         }
         dependencies {
-            classpath 'io.github.rockcrafters.rockcraft:1.2.0'
+            classpath 'io.github.rockcrafters.rockcraft:1.2.1'
         }
     }
     apply plugin: 'io.github.rockcrafters.rockcraft-plugin'
@@ -88,7 +88,7 @@ To use the plugin, apply the following two steps:
             }
         }
         dependencies {
-            classpath("io.github.rockcrafters.rockcraft:1.2.0")
+            classpath("io.github.rockcrafters.rockcraft:1.2.1")
         }
     }
     apply(plugin = "io.github.rockcrafters.rockcraft")
@@ -265,7 +265,7 @@ The plugin supports all [configuration options](#configuration-options).
 
 ### 3. Configure the build container (optional)
 
-Build 
+Build
 
 ```xml
         <plugins>
@@ -276,7 +276,7 @@ Build
                 <configuration>
                     ...
                     <!-- allows use of artifacts in the local Maven repository in the build container, default false -->
-                    <allowLocal>true</allowLocal> 
+                    <allowLocal>true</allowLocal>
                 </configuration>
             </plugin>
         </plugins>
