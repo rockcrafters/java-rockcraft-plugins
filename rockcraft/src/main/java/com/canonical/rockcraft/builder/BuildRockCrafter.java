@@ -276,12 +276,26 @@ public class BuildRockCrafter extends AbstractRockCrafter {
     private Map<String, Object> createDependenciesPart() {
         Map<String, Object> part = new HashMap<>();
         part.put("plugin", "nil");
-        part.put("build-packages", new String[]{"busybox"});
-
         List<String> slices = getOptions().getSlices();
-        slices.add("busybox_bins");
-        slices.add("base-files_base");
-        slices.add("base-files_chisel");
+        // slices mandated for development rock
+        slices.addAll(Arrays.asList(
+                "apt_apt-get",
+                "base-files_base",
+                "base-files_chisel",
+                "base-files_release-info",
+                "base-passwd_data",
+                "bash_bins",
+                "ca-certificates_data",
+                "coreutils_bins",
+                "debianutils_which",
+                "findutils_bins",
+                "grep_bins",
+                "gzip_bins",
+                "tar_bins",
+                "wget_bins",
+                "zstd_bins",
+                "debianutils_run-parts",
+                "libc-bin_getent"));
         slices.add("git_bins");
         slices.add("git_http-support");
 
