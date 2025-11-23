@@ -115,8 +115,9 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         Map<String, Object> part = new HashMap<>();
         part.put("plugin", "nil");
         part.put("source", ".");
-        String overrideBuild = "mkdir -p ${CRAFT_PART_INSTALL}/home/builder/.m2/\n" +
-                "cp settings.xml ${CRAFT_PART_INSTALL}/home/builder/.m2/\n" +
+        String overrideBuild = "mkdir -p ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/\n" +
+                "cp settings.xml ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/\n" +
+                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/\n" +
                 "craftctl default";
         part.put("override-build", overrideBuild);
         return part;
@@ -265,9 +266,9 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         part.put("source", source);
         part.put("source-type", "local");
         part.put("after", new String[]{"dependencies"});
-        String commands = "mkdir -p ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
-                "cp -r * ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
-                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
+        String commands = "mkdir -p ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/repository/\n" +
+                "cp -r * ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/repository/\n" +
+                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu/.m2\n" +
                 "craftctl default\n";
         part.put("override-build", commands);
         return part;
@@ -320,10 +321,10 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         }
         overrideCommands.append("\n");
         overrideCommands.append("# ignore if group is already created\n");
-        overrideCommands.append("groupadd -f -R ${CRAFT_PART_INSTALL} -g 1000 builder || [[ $? -eq 4 || $? -eq 9 ]]\n");
+        overrideCommands.append("groupadd -f -R ${CRAFT_PART_INSTALL} -g 1000 ubuntu || [[ $? -eq 4 || $? -eq 9 ]]\n");
         overrideCommands.append("# ignore if user is already created\n");
-        overrideCommands.append("useradd -s /usr/bin/sh --home-dir /home/builder --create-home -R ${CRAFT_PART_INSTALL} -g builder -u 1000 builder || [[ $? -eq 4 || $? -eq 9 ]]\n");
-
+        overrideCommands.append("useradd -s /usr/bin/sh --home-dir /home/ubuntu --create-home -R ${CRAFT_PART_INSTALL} -g ubuntu -u 1000 ubuntu || [[ $? -eq 4 || $? -eq 9 ]]\n");
+        overrideCommands.append("chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu");
         overrideCommands.append("\ncraftctl default\n");
         part.put("override-build", overrideCommands.toString());
         return part;
