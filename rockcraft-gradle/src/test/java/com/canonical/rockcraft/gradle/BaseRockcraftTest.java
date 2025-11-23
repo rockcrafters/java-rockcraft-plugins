@@ -81,6 +81,9 @@ public abstract class BaseRockcraftTest {
     @AfterEach
     protected void tearDown() throws IOException, InterruptedException {
         new ProcessBuilder("rm", "-rf", projectDir.getAbsolutePath()).start().waitFor();
+        new ProcessBuilder("/bin/bash", "-c",
+                "lxc list --project rockcraft --format csv -c n | grep -v base-instance | xargs lxc delete -f --project rockcraft")
+                .start().waitFor();
     }
 
     public BuildResult runBuild(String... target) {
