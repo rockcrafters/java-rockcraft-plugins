@@ -104,6 +104,7 @@ public class RockBuilder {
 
     private static void copyInDocker(File ociImage, String imageName, String imageVersion) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder("rockcraft.skopeo",
+                "--insecure-policy",
                 "copy",
                 String.format("oci-archive:%s", ociImage.getAbsolutePath()),
                 String.format("docker-daemon:%s:latest", imageName))
