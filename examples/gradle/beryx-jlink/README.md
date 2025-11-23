@@ -19,3 +19,7 @@ Push the rock to the local Docker daemon:
 # Running
 
 `docker run app exec /image/bin/app`
+
+# Troubleshooting
+
+See [../README.md](../README.md#Troubleshooting).

@@ -29,3 +29,7 @@ This will output:
 `Hello World!{Hello=World}`
 
 and start Tomcat on port 8080.
+
+# Troubleshooting
+
+See [../README.md](../README.md#Troubleshooting).

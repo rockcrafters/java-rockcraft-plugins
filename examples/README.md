@@ -13,6 +13,7 @@ This directory contains sample projects using the rockcraft plugin:
 # Troubleshooting
 
 You may encounter this error when pushing the rock to the Docker registry:
+
 ```
 [INFO] --- rockcraft:1.1.2:push-rock (default) @ spring-boot-app-sample ---
 Getting image source signatures

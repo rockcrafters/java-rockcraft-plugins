@@ -26,3 +26,6 @@ Start the default service:
 
 `docker run app-options -v`
 
+# Troubleshooting
+
+See [../README.md](../README.md#Troubleshooting).

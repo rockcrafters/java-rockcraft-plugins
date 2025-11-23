@@ -19,3 +19,7 @@ Push the rock to the local Docker daemon:
 # Running
 
 `docker run spring-app exec  /usr/bin/java -jar /jars/spring-app-0.0.1-SNAPSHOT.jar`
+
+# Troubleshooting
+
+See [../README.md](../README.md#Troubleshooting).
