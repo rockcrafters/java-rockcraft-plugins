@@ -32,4 +32,4 @@ and start Tomcat on port 8080.
 
 # Troubleshooting
 
-See [../README.md](../README.md#Troubleshooting).
+See [README.md](../../README.md#Troubleshooting).

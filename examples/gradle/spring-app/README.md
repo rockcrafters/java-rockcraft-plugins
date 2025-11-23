@@ -22,4 +22,4 @@ Push the rock to the local Docker daemon:
 
 # Troubleshooting
 
-See [../README.md](../README.md#Troubleshooting).
+See [README.md](../../README.md#Troubleshooting).

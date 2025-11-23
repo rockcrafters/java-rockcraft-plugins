@@ -50,4 +50,4 @@ This will output:
 
 # Troubleshooting
 
-See [../README.md](../README.md#Troubleshooting).
+See [README.md](../../README.md#Troubleshooting).

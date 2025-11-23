@@ -28,4 +28,4 @@ Start the default service:
 
 # Troubleshooting
 
-See [../README.md](../README.md#Troubleshooting).
+See [README.md](../../README.md#Troubleshooting).
