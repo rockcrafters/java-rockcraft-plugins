@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,8 @@ public class RockCrafterTest {
         RockCrafter rockCrafter = new RockCrafter(settings, options, artifacts);
         rockCrafter.writeRockcraft();
         Yaml yaml = new Yaml();
-        try (Reader r = new InputStreamReader(new FileInputStream(new File(tempDir, "rockcraft.yaml")))){
+
+        try (Reader r = new InputStreamReader(new FileInputStream(new File(tempDir, "rockcraft.yaml")), StandardCharsets.UTF_8)){
             Map<String, Object> result = yaml.load(r);
             assertEquals("Please set summary for your rock", result.get("summary"));
             assertEquals("Please set description for your rock", result.get("description"));
