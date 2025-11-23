@@ -319,7 +319,6 @@ public class BuildRockCrafter extends AbstractRockCrafter {
             overrideCommands.append(" \\\n");
         }
         overrideCommands.append("\n");
-        overrideCommands.append("busybox --install -s ${CRAFT_PART_INSTALL}/usr/bin/\n");
         overrideCommands.append("# ignore if group is already created\n");
         overrideCommands.append("groupadd -f -R ${CRAFT_PART_INSTALL} -g 1000 builder || [[ $? -eq 4 || $? -eq 9 ]]\n");
         overrideCommands.append("# ignore if user is already created\n");
