@@ -319,7 +319,10 @@ public class BuildRockCrafter extends AbstractRockCrafter {
             overrideCommands.append(slice);
             overrideCommands.append(" \\\n");
         }
+
         overrideCommands.append("\n");
+        // generate /etc/ld.so.cache
+        overrideCommands.append("chroot ${CRAFT_PART_INSTALL} /sbin/ldconfig\n");
         overrideCommands.append("# ignore if group is already created\n");
         overrideCommands.append("groupadd -f -R ${CRAFT_PART_INSTALL} -g 1000 ubuntu || [[ $? -eq 4 || $? -eq 9 ]]\n");
         overrideCommands.append("# ignore if user is already created\n");
