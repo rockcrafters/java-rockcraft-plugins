@@ -1,6 +1,6 @@
 # Introduction 
 
-This example showcases using a devcontainer built with Rockcraft plugin in Visual Studio Code. 
+This example showcases using a devcontainer built with Rockcraft plugin in Visual Studio Code.
 
 # Building 
 
