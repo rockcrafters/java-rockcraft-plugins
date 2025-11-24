@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -81,9 +82,22 @@ public abstract class BaseRockcraftTest {
     @AfterEach
     protected void tearDown() throws IOException, InterruptedException {
         new ProcessBuilder("rm", "-rf", projectDir.getAbsolutePath()).start().waitFor();
-        new ProcessBuilder("/bin/bash", "-c",
+        Process cleanup = new ProcessBuilder("/bin/bash", "-c",
                 "lxc list --project rockcraft --format csv -c n | grep -v base-instance | xargs lxc delete -f --project rockcraft")
-                .start().waitFor();
+                .redirectErrorStream(true)
+                .start();
+        int exitCode = cleanup.waitFor();
+        if (exitCode != 0) {
+            System.err.println("Cleanup exited: " + exitCode);
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(cleanup.getInputStream(), StandardCharsets.UTF_8))) {
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+            }
+        }
     }
 
     public BuildResult runBuild(String... target) {
