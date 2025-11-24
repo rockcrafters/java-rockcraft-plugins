@@ -68,7 +68,7 @@ public class CreateBuildRockTest extends BaseRockcraftTest {
 
             Map<String, Object> dependenciesPart =(Map<String, Object>) parts.get("dependencies");
             buildPackages = (List<String>)dependenciesPart.get("build-packages");
-            assertTrue(buildPackages.contains("busybox"));
+            assertNull(buildPackages);
             buildScript = (String)dependenciesPart.get("override-build");
             assertTrue(buildScript.contains("craftctl default"), "default script action present");
 
