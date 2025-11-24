@@ -1,11 +1,12 @@
 apply plugin: DisableRepos
 class DisableRepos implements Plugin<Gradle> {
     void apply(Gradle gradle) {
+        String localRepo = "file:///home/ubuntu/.m2/repository"
         gradle.settingsEvaluated { settings ->
             settings.pluginManagement.repositories {
                 clear()
                 maven {
-                    url "file:///home/builder/.m2/repository"
+                    url localRepo
                 }
             }
         }
@@ -13,7 +14,7 @@ class DisableRepos implements Plugin<Gradle> {
             settings.pluginManagement.repositories {
                 clear()
                 maven {
-                    url "file:///home/builder/.m2/repository"
+                    url localRepo
                 }
             }
         }
@@ -21,14 +22,14 @@ class DisableRepos implements Plugin<Gradle> {
             project.repositories {
                 clear()
                 maven {
-                    url "file:///home/builder/.m2/repository"
+                    url localRepo
                 }
             }
             project.buildscript {
                 repositories {
                     clear()
                     maven {
-                        url "file:///home/builder/.m2/repository"
+                        url localRepo
                     }
                 }
             }

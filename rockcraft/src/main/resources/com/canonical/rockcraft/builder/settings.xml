@@ -3,9 +3,9 @@
         <mirror>
             <id>internal-repository</id>
             <name>Internal Repository Mirror</name>
-            <url>file:///home/builder/.m2/repository</url>
+            <url>file:///home/ubuntu/.m2/repository</url>
             <mirrorOf>*</mirrorOf>
         </mirror>
     </mirrors>
-    <localRepository>/home/builder/.m2/repository</localRepository>
+    <localRepository>/home/ubuntu/.m2/repository</localRepository>
 </settings>
