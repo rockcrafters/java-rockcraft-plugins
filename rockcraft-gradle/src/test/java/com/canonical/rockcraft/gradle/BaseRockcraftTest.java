@@ -23,6 +23,8 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -82,10 +84,22 @@ public abstract class BaseRockcraftTest {
     @AfterEach
     protected void tearDown() throws IOException, InterruptedException {
         new ProcessBuilder("rm", "-rf", projectDir.getAbsolutePath()).start().waitFor();
-        Process cleanup = new ProcessBuilder("/bin/bash", "-c",
-                "lxc list --project rockcraft --format csv -c n | grep -v base-instance | xargs lxc delete -f --project rockcraft")
-                .redirectErrorStream(true)
-                .start();
+        // lxc list --project rockcraft --format csv -c n | grep -v base-instance | xargs lxc delete -f --project rockcraft
+        List<Process> pipeline = ProcessBuilder.startPipeline(
+                Arrays.asList(
+                        new ProcessBuilder("lxc",
+                                "list",
+                                "--project", "rockcraft",
+                                "--format", "csv",
+                                "-n", "-c"),
+                        new ProcessBuilder("grep", "-v", "base-instance"),
+                        new ProcessBuilder("xargs",
+                                "lxc",
+                                "delete",
+                                "-f",
+                                "--project", "rockcraft").redirectErrorStream(true)));
+
+        Process cleanup = pipeline.get(pipeline.size() - 1);
         int exitCode = cleanup.waitFor();
         if (exitCode != 0) {
             System.err.println("Cleanup exited: " + exitCode);
