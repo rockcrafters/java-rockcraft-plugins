@@ -1,0 +1,5 @@
+{
+  "name": "Java",
+  "image": "build-spring-app:latest",
+  "containerUser" : "ubuntu"
+}
