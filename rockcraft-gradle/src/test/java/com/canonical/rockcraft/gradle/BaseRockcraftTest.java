@@ -91,7 +91,7 @@ public abstract class BaseRockcraftTest {
                                 "list",
                                 "--project", "rockcraft",
                                 "--format", "csv",
-                                "-n", "-c"),
+                                "-c", "n"),
                         new ProcessBuilder("grep", "-v", "base-instance"),
                         new ProcessBuilder("xargs",
                                 "lxc",
