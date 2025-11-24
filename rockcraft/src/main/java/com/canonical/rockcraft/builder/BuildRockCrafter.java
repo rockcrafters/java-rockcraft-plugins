@@ -329,7 +329,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         overrideCommands.append("# ignore if group is already created\n");
         overrideCommands.append("groupadd -f -R ${CRAFT_PART_INSTALL} -g 1000 ubuntu || [[ $? -eq 4 || $? -eq 9 ]]\n");
         overrideCommands.append("# ignore if user is already created\n");
-        overrideCommands.append("useradd -s /usr/bin/sh --home-dir /home/ubuntu --create-home -R ${CRAFT_PART_INSTALL} -g ubuntu -u 1000 ubuntu || [[ $? -eq 4 || $? -eq 9 ]]\n");
+        overrideCommands.append("useradd -s /usr/bin/bash --home-dir /home/ubuntu --create-home -R ${CRAFT_PART_INSTALL} -g ubuntu -u 1000 ubuntu || [[ $? -eq 4 || $? -eq 9 ]]\n");
         overrideCommands.append("chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu");
         overrideCommands.append("\ncraftctl default\n");
         part.put("override-build", overrideCommands.toString());
