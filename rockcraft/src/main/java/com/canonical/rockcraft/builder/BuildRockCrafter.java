@@ -290,6 +290,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
                 "coreutils_bins",
                 "debianutils_which",
                 "findutils_bins",
+                "gawk_bins",
                 "grep_bins",
                 "gzip_bins",
                 "tar_bins",
@@ -323,6 +324,8 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         overrideCommands.append("\n");
         // generate /etc/ld.so.cache
         overrideCommands.append("chroot ${CRAFT_PART_INSTALL} /sbin/ldconfig\n");
+        // create awk link
+        overrideCommands.append("(cd ${CRAFT_PART_INSTALL} && ln -sf --relative usr/bin/gawk usr/bin/awk)");
         overrideCommands.append("# ignore if group is already created\n");
         overrideCommands.append("groupadd -f -R ${CRAFT_PART_INSTALL} -g 1000 ubuntu || [[ $? -eq 4 || $? -eq 9 ]]\n");
         overrideCommands.append("# ignore if user is already created\n");
