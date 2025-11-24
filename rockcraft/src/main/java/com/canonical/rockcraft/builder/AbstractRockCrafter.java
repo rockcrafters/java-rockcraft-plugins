@@ -74,7 +74,11 @@ public abstract class AbstractRockCrafter {
         Map<String, Object> rockcraft = new HashMap<>();
         rockcraft.put(IRockcraftNames.ROCKCRAFT_NAME, RockNameUtil.formatRockName(getSettings().getName()));
         rockcraft.put(IRockcraftNames.ROCKCRAFT_VERSION, String.valueOf(getSettings().getVersion()));
-        rockcraft.put("summary", getOptions().getSummary());
+        if (getOptions().getSummary().isEmpty()) {
+            rockcraft.put("summary", "Please set summary for your rock");
+        } else {
+            rockcraft.put("summary", getOptions().getSummary());
+        }
         rockcraft.put( "run-user", "_daemon_");
         Path description = getOptions().getDescription();
         if (description != null) {
@@ -83,7 +87,7 @@ public abstract class AbstractRockCrafter {
                 throw new UnsupportedOperationException("Rockcraft plugin description file does not exist.");
             rockcraft.put("description", new String(Files.readAllBytes(descriptionFile.toPath())));
         } else {
-            rockcraft.put("description", "");
+            rockcraft.put("description", "Please set description for your rock");
         }
 
         rockcraft.put("platforms", getPlatforms());
