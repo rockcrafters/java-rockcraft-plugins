@@ -40,7 +40,7 @@ public class RockCrafterTest {
         rockCrafter.writeRockcraft();
         Yaml yaml = new Yaml();
 
-        try (Reader r = new InputStreamReader(new FileInputStream(new File(tempDir, "rockcraft.yaml")), StandardCharsets.UTF_8)){
+        try (Reader r = new InputStreamReader(new FileInputStream(new File(tempDir, "rockcraft.yaml")), StandardCharsets.UTF_8)) {
             Map<String, Object> result = yaml.load(r);
             assertEquals("Please set summary for your rock", result.get("summary"));
             assertEquals("Please set description for your rock", result.get("description"));
