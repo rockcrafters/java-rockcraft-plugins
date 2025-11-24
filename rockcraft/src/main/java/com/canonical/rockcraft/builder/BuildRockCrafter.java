@@ -117,7 +117,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         part.put("source", ".");
         String overrideBuild = "mkdir -p ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/\n" +
                 "cp settings.xml ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/\n" +
-                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/\n" +
+                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu\n" +
                 "craftctl default";
         part.put("override-build", overrideBuild);
         return part;
@@ -268,7 +268,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         part.put("after", new String[]{"dependencies"});
         String commands = "mkdir -p ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/repository/\n" +
                 "cp -r * ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/repository/\n" +
-                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu/.m2\n" +
+                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu\n" +
                 "craftctl default\n";
         part.put("override-build", commands);
         return part;
