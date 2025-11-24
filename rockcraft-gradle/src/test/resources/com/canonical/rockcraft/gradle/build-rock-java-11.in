@@ -4,6 +4,6 @@ plugins {
 }
 
 rockcraft {
-    buildPackage = "openjdk-11-jdk"
+    buildPackage = "openjdk-11-jdk-headless"
     targetRelease = 11
 }
