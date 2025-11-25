@@ -297,7 +297,8 @@ public class BuildRockCrafter extends AbstractRockCrafter {
                 "wget_bins",
                 "zstd_bins",
                 "debianutils_run-parts",
-                "libc-bin_getent"));
+                "libc-bin_getent",
+                "procps_bins"));
         slices.add("git_bins");
         slices.add("git_http-support");
 
