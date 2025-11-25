@@ -356,7 +356,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
             part.put("source-branch", getOptions().getBranch());
         }
         StringBuilder overrideCommands = new StringBuilder();
-        overrideCommands.append("JAVA_HOME=\"$(dirname $(dirname $(readlink -f /usr/bin/java)))\"");
+        overrideCommands.append("JAVA_HOME=\"$(dirname $(dirname $(readlink -f /usr/bin/java)))\"\n");
         overrideCommands.append("chisel cut ");
         if (getOptions().getSource() != null) {
             overrideCommands.append("--release ./ ");
