@@ -373,7 +373,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         overrideCommands.append("cd ${CRAFT_PART_INSTALL}\n");
         overrideCommands.append("mkdir -p usr/bin\n");
         overrideCommands.append("for tool in \"$(find ${CRAFT_PART_INSTALL}/${JAVA_HOME}/bin -type f -executable -printf \"%P\\n\")\"; do\n");
-        overrideCommands.append("   /usr/bin/ln -s --relative ${JAVA_HOME}/bin/${tool} usr/bin/\n");
+        overrideCommands.append("   /usr/bin/ln -s --relative \"${JAVA_HOME}/bin/${tool}\" usr/bin/\n");
         overrideCommands.append("done\n");
         overrideCommands.append("mkdir -p ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/ &&  cp /etc/ssl/certs/java/cacerts ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/cacerts\n");
         overrideCommands.append("\ncraftctl default\n");
