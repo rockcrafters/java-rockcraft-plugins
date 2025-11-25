@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  */
 public class BuildRockCrafter extends AbstractRockCrafter {
 
-    private static final String SET_UBUNTU_OWNER_COMMAND = "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu\\n";
+    private static final String SET_UBUNTU_OWNER_COMMAND = "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu\n";
 
     /**
      * Create build rock RockCrafter
