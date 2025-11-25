@@ -74,7 +74,7 @@ public class CreateBuildRockTest extends BaseRockcraftTest {
 
             Map<String, Object> mavenRepoPart =(Map<String, Object>) parts.get("maven-cache");
             buildScript = (String)mavenRepoPart.get("override-build");
-            assertTrue(buildScript.contains("${CRAFT_PART_INSTALL}/home/builder/.m2"));
+            assertTrue(buildScript.contains("${CRAFT_PART_INSTALL}/home/ubuntu/.m2"));
         }
     }
 
