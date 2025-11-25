@@ -27,3 +27,7 @@ Run the application:
 This will output:
 
 `Hello World!{Hello=World}`
+
+# Troubleshooting
+
+See [README.md](../../README.md#Troubleshooting).
