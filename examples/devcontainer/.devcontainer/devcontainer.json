@@ -1,0 +1,12 @@
+{
+  "name": "Java",
+  "image": "build-spring-app:latest",
+  "containerUser" : "ubuntu",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack"
+      ]
+    }
+  }
+}

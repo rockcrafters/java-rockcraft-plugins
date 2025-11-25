@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
  */
 public class BuildRockCrafter extends AbstractRockCrafter {
 
+    private static final String SET_UBUNTU_OWNER_COMMAND = "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu\n";
+
     /**
      * Create build rock RockCrafter
      *
@@ -115,8 +117,9 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         Map<String, Object> part = new HashMap<>();
         part.put("plugin", "nil");
         part.put("source", ".");
-        String overrideBuild = "mkdir -p ${CRAFT_PART_INSTALL}/home/builder/.m2/\n" +
-                "cp settings.xml ${CRAFT_PART_INSTALL}/home/builder/.m2/\n" +
+        String overrideBuild = "mkdir -p ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/\n" +
+                "cp settings.xml ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/\n" +
+                SET_UBUNTU_OWNER_COMMAND +
                 "craftctl default";
         part.put("override-build", overrideBuild);
         return part;
@@ -265,9 +268,9 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         part.put("source", source);
         part.put("source-type", "local");
         part.put("after", new String[]{"dependencies"});
-        String commands = "mkdir -p ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
-                "cp -r * ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
-                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/builder/.m2/repository/\n" +
+        String commands = "mkdir -p ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/repository/\n" +
+                "cp -r * ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/repository/\n" +
+                SET_UBUNTU_OWNER_COMMAND +
                 "craftctl default\n";
         part.put("override-build", commands);
         return part;
@@ -276,12 +279,28 @@ public class BuildRockCrafter extends AbstractRockCrafter {
     private Map<String, Object> createDependenciesPart() {
         Map<String, Object> part = new HashMap<>();
         part.put("plugin", "nil");
-        part.put("build-packages", new String[]{"busybox"});
-
         List<String> slices = getOptions().getSlices();
-        slices.add("busybox_bins");
-        slices.add("base-files_base");
-        slices.add("base-files_chisel");
+        // slices mandated for development rock
+        slices.addAll(Arrays.asList(
+                "apt_apt-get",
+                "base-files_base",
+                "base-files_chisel",
+                "base-files_release-info",
+                "base-passwd_data",
+                "bash_bins",
+                "ca-certificates_data",
+                "coreutils_bins",
+                "debianutils_which",
+                "findutils_bins",
+                "gawk_bins",
+                "grep_bins",
+                "gzip_bins",
+                "tar_bins",
+                "wget_bins",
+                "zstd_bins",
+                "debianutils_run-parts",
+                "libc-bin_getent",
+                "procps_bins"));
         slices.add("git_bins");
         slices.add("git_http-support");
 
@@ -304,13 +323,17 @@ public class BuildRockCrafter extends AbstractRockCrafter {
             overrideCommands.append(slice);
             overrideCommands.append(" \\\n");
         }
-        overrideCommands.append("\n");
-        overrideCommands.append("busybox --install -s ${CRAFT_PART_INSTALL}/usr/bin/\n");
-        overrideCommands.append("# ignore if group is already created\n");
-        overrideCommands.append("groupadd -f -R ${CRAFT_PART_INSTALL} -g 1000 builder || [[ $? -eq 4 || $? -eq 9 ]]\n");
-        overrideCommands.append("# ignore if user is already created\n");
-        overrideCommands.append("useradd -s /usr/bin/sh --home-dir /home/builder --create-home -R ${CRAFT_PART_INSTALL} -g builder -u 1000 builder || [[ $? -eq 4 || $? -eq 9 ]]\n");
 
+        overrideCommands.append("\n");
+        // generate /etc/ld.so.cache
+        overrideCommands.append("chroot ${CRAFT_PART_INSTALL} /sbin/ldconfig\n");
+        // create awk link
+        overrideCommands.append("(cd ${CRAFT_PART_INSTALL} && ln -sf --relative usr/bin/gawk usr/bin/awk)");
+        overrideCommands.append("# ignore if group is already created\n");
+        overrideCommands.append("groupadd -f -R ${CRAFT_PART_INSTALL} -g 1000 ubuntu || [[ $? -eq 4 || $? -eq 9 ]]\n");
+        overrideCommands.append("# ignore if user is already created\n");
+        overrideCommands.append("useradd -s /usr/bin/bash --home-dir /home/ubuntu --create-home -R ${CRAFT_PART_INSTALL} -g ubuntu -u 1000 ubuntu || [[ $? -eq 4 || $? -eq 9 ]]\n");
+        overrideCommands.append(SET_UBUNTU_OWNER_COMMAND);
         overrideCommands.append("\ncraftctl default\n");
         part.put("override-build", overrideCommands.toString());
         return part;
@@ -325,6 +348,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         List<String> slices = new ArrayList<>();
         slices.add(options.getBuildPackage() + "_standard");
         slices.add(options.getBuildPackage() + "_headers");
+        slices.add(options.getBuildPackage() + "_modules");
         slices.add(options.getBuildPackage() + "_debug-headers");
         if (getOptions().getSource() != null) {
             part.put("source", getOptions().getSource());
@@ -334,6 +358,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
             part.put("source-branch", getOptions().getBranch());
         }
         StringBuilder overrideCommands = new StringBuilder();
+        overrideCommands.append("JAVA_HOME=\"$(dirname $(dirname $(readlink -f /usr/bin/java)))\"\n");
         overrideCommands.append("chisel cut ");
         if (getOptions().getSource() != null) {
             overrideCommands.append("--release ./ ");
@@ -345,7 +370,14 @@ public class BuildRockCrafter extends AbstractRockCrafter {
             overrideCommands.append(" \\\n");
         }
         overrideCommands.append("\n");
-        overrideCommands.append("cd ${CRAFT_PART_INSTALL} && mkdir -p usr/bin && PATH=/usr/bin find . -type f -name java -exec ln -sf --relative {} ${CRAFT_PART_INSTALL}/usr/bin/ \\;\n");
+        // TODO: add release file to the JDK standard slice
+        overrideCommands.append("cp ${JAVA_HOME}/release ${CRAFT_PART_INSTALL}/${JAVA_HOME}/\n");
+        overrideCommands.append("cd ${CRAFT_PART_INSTALL}\n");
+        overrideCommands.append("mkdir -p usr/bin\n");
+        overrideCommands.append("TOOLS=\"$(find ${CRAFT_PART_INSTALL}/${JAVA_HOME}/bin -type f -executable -printf '%P\\n')\"\n");
+        overrideCommands.append("for tool in ${TOOLS}; do\n");
+        overrideCommands.append("   /usr/bin/ln -s --relative \"${JAVA_HOME}/bin/${tool}\" usr/bin/\n");
+        overrideCommands.append("done\n");
         overrideCommands.append("mkdir -p ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/ &&  cp /etc/ssl/certs/java/cacerts ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/cacerts\n");
         overrideCommands.append("\ncraftctl default\n");
         part.put("override-build", overrideCommands.toString());
