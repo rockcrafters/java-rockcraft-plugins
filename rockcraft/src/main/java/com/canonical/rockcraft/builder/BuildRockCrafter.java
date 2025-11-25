@@ -346,6 +346,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         List<String> slices = new ArrayList<>();
         slices.add(options.getBuildPackage() + "_standard");
         slices.add(options.getBuildPackage() + "_headers");
+        slices.add(options.getBuildPackage() + "_modules");
         slices.add(options.getBuildPackage() + "_debug-headers");
         if (getOptions().getSource() != null) {
             part.put("source", getOptions().getSource());
@@ -355,6 +356,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
             part.put("source-branch", getOptions().getBranch());
         }
         StringBuilder overrideCommands = new StringBuilder();
+        overrideCommands.append("JAVA_HOME=\"$(dirname $(dirname $(readlink -f /usr/bin/java)))\"");
         overrideCommands.append("chisel cut ");
         if (getOptions().getSource() != null) {
             overrideCommands.append("--release ./ ");
@@ -366,7 +368,13 @@ public class BuildRockCrafter extends AbstractRockCrafter {
             overrideCommands.append(" \\\n");
         }
         overrideCommands.append("\n");
-        overrideCommands.append("cd ${CRAFT_PART_INSTALL} && mkdir -p usr/bin && PATH=/usr/bin find . -type f -name java -exec ln -sf --relative {} ${CRAFT_PART_INSTALL}/usr/bin/ \\;\n");
+        // TODO: add release file to the JDK standard slice
+        overrideCommands.append("cp ${JAVA_HOME}/release ${CRAFT_PART_INSTALL}/${JAVA_HOME}/\n");
+        overrideCommands.append("cd ${CRAFT_PART_INSTALL}\n");
+        overrideCommands.append("mkdir -p usr/bin\n");
+        overrideCommands.append("for tool in \"$(find ${CRAFT_PART_INSTALL}/${JAVA_HOME}/bin -type f -executable -printf \"%P\\n\")\"; do\n");
+        overrideCommands.append("   /usr/bin/ln -s --relative ${JAVA_HOME}/bin/${tool} usr/bin/\n");
+        overrideCommands.append("done\n");
         overrideCommands.append("mkdir -p ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/ &&  cp /etc/ssl/certs/java/cacerts ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/cacerts\n");
         overrideCommands.append("\ncraftctl default\n");
         part.put("override-build", overrideCommands.toString());
