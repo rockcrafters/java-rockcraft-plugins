@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
  */
 public class BuildRockCrafter extends AbstractRockCrafter {
 
+    private static final String SET_UBUNTU_OWNER_COMMAND = "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu\\n";
+
     /**
      * Create build rock RockCrafter
      *
@@ -117,7 +119,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         part.put("source", ".");
         String overrideBuild = "mkdir -p ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/\n" +
                 "cp settings.xml ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/\n" +
-                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu\n" +
+                SET_UBUNTU_OWNER_COMMAND +
                 "craftctl default";
         part.put("override-build", overrideBuild);
         return part;
@@ -268,7 +270,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         part.put("after", new String[]{"dependencies"});
         String commands = "mkdir -p ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/repository/\n" +
                 "cp -r * ${CRAFT_PART_INSTALL}/home/ubuntu/.m2/repository/\n" +
-                "chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu\n" +
+                SET_UBUNTU_OWNER_COMMAND +
                 "craftctl default\n";
         part.put("override-build", commands);
         return part;
@@ -331,7 +333,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         overrideCommands.append("groupadd -f -R ${CRAFT_PART_INSTALL} -g 1000 ubuntu || [[ $? -eq 4 || $? -eq 9 ]]\n");
         overrideCommands.append("# ignore if user is already created\n");
         overrideCommands.append("useradd -s /usr/bin/bash --home-dir /home/ubuntu --create-home -R ${CRAFT_PART_INSTALL} -g ubuntu -u 1000 ubuntu || [[ $? -eq 4 || $? -eq 9 ]]\n");
-        overrideCommands.append("chown -R 1000:1000 ${CRAFT_PART_INSTALL}/home/ubuntu");
+        overrideCommands.append(SET_UBUNTU_OWNER_COMMAND);
         overrideCommands.append("\ncraftctl default\n");
         part.put("override-build", overrideCommands.toString());
         return part;
