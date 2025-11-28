@@ -91,6 +91,10 @@ jobs:
   build-gradle:
     name: Build Gradle
     runs-on: ubuntu-latest
+    # the matrix lists known test tags and untagged tests ( none() )
+    strategy:
+      matrix:
+        test-tag: [ dependencies, buildRock, rock, springBoot, plugin, none() ]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -111,18 +115,5 @@ jobs:
 
       - name: Build and verify gradle project
         run: |
-          ./gradlew clean build -i
+          ./gradlew clean build -i -PtestTags="${{ matrix.test-tag }}"
 
-      - name: Publish Snapshots
-        if: github.ref == 'refs/heads/master'
-        run: |
-          # Find project version
-          ver=$(./gradlew properties -q | grep "version:" | awk '{print $2}')
-          # deploy if snapshot found
-          if [[ $ver == *"SNAPSHOT"* ]]
-          then
-              sudo snap install rockcraft --classic
-              lxd init --auto
-              ./gradlew publish
-          fi
-        shell: bash
