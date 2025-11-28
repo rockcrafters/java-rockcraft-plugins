@@ -63,7 +63,7 @@ jobs:
           done
 
   build-maven:
-    name: Build Maven
+    name: Test Maven
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -92,7 +92,7 @@ jobs:
           mvn -B install invoker:install invoker:run
 
   build-gradle:
-    name: Build Gradle
+    name: Test Gradle
     runs-on: ubuntu-latest
     # the matrix lists known test tags and untagged tests ( none() )
     strategy:
