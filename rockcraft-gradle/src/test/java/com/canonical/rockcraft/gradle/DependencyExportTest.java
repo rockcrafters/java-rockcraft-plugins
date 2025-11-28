@@ -16,6 +16,7 @@ package com.canonical.rockcraft.gradle;
 import com.canonical.rockcraft.builder.IRockcraftNames;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.TaskOutcome;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag("dependencies")
 public class DependencyExportTest extends BaseRockcraftTest {
 
     @Test

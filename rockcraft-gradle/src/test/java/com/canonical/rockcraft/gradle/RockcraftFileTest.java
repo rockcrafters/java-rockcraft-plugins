@@ -16,6 +16,7 @@ package com.canonical.rockcraft.gradle;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.TaskOutcome;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 
@@ -28,6 +29,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+@Tag("rock")
 public class RockcraftFileTest extends BaseRockcraftTest {
 
     protected File getRockcraftFile() {

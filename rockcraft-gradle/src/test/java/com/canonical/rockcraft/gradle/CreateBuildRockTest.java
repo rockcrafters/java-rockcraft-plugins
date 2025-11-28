@@ -27,11 +27,14 @@ import org.gradle.testkit.runner.TaskOutcome;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 
 import com.canonical.rockcraft.builder.IRockcraftNames;
 
+@Tag("buildRock")
 public class CreateBuildRockTest extends BaseRockcraftTest {
 
     @Test
