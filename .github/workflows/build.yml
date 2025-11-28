@@ -30,6 +30,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: gradle
 
       - name: Build and verify Gradle sample projects
         run: |
@@ -51,6 +52,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: maven
 
       - name: Build and verify Maven sample projects
         run: |
@@ -72,6 +74,7 @@ jobs:
         with: # running setup-java again overwrites the settings.xml
           distribution: 'temurin'
           java-version: '8'
+          cache: maven
 
       - name: Setup LXD
         uses: canonical/setup-lxd@main
@@ -100,9 +103,11 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Java
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openjdk-8-jdk-headless
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+          cache: gradle
 
       - name: Setup LXD
         uses: canonical/setup-lxd@main
