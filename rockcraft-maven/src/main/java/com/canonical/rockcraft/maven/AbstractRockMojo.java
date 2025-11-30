@@ -22,6 +22,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.toolchain.ToolchainManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +47,11 @@ public abstract class AbstractRockMojo extends AbstractMojo {
     @Component
     private RuntimeInformation runtimeInformation;
 
+    @Component
+    private ToolchainManager toolchainManager;
+
     @Parameter(property = "buildPackage")
-    private String buildPackage = "openjdk-21-jdk";
+    private String buildPackage = "";
 
     @Parameter(property = "targetRelease")
     private int targetRelease = 21;
@@ -133,7 +137,7 @@ public abstract class AbstractRockMojo extends AbstractMojo {
         options.setCreateService(createService);
         options.setNativeImage(isNativeImageRequested());
         if ("".equals(options.getBuildPackage())) {
-            options.setBuildPackage(Toolchain.getToolchainVersion(getProject()));
+            options.setBuildPackage(Toolchain.getToolchainPackage(getSession(), toolchainManager, getLog()));
         }
     }
 

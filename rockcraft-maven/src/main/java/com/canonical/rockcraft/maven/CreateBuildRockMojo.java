@@ -17,6 +17,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
+import org.apache.maven.toolchain.ToolchainManager;
 import org.eclipse.aether.RepositorySystemSession;
 import org.xml.sax.SAXException;
 
@@ -41,6 +42,9 @@ public final class CreateBuildRockMojo extends AbstractMojo {
 
     @Component
     private RuntimeInformation runtimeInformation;
+
+    @Component
+    private ToolchainManager toolchainManager;
 
     @Component
     private MavenProject project;
@@ -136,7 +140,7 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         options.setBuildGoals(buildGoals);
         options.setNativeImage(isNativeImageRequested());
         if ("".equals(options.getBuildPackage())) {
-            options.setBuildPackage(Toolchain.getToolchainVersion(project));
+            options.setBuildPackage(Toolchain.getToolchainPackage(session, toolchainManager, getLog()));
         }
     }
 
@@ -203,4 +207,3 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         return nativeProfileActivated && nativeCompileGoalRequested;
     }
 }
-
