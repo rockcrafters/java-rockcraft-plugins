@@ -53,6 +53,9 @@ public abstract class CreateBuildRockcraftTask extends DefaultTask {
     @TaskAction
     @SuppressWarnings("unchecked")
     public void writeRockcraft() throws IOException {
+        if ("".equals(options.getBuildPackage())) {
+            options.setBuildPackage(Toolchain.getToolchainVersion(getProject()));
+        }
         HashSet<File> artifacts = new HashSet<>();
         Set<Object> dependsOn = getDependsOn();
         for (Object entry : dependsOn) {

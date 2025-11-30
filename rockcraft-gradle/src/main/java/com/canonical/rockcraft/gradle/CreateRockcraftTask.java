@@ -47,6 +47,9 @@ public abstract class CreateRockcraftTask extends AbstractRockcraftTask {
     @SuppressWarnings("unchecked")
     @TaskAction
     public void writeRockcraft() {
+        if ("".equals(getOptions().getBuildPackage())) {
+            getOptions().setBuildPackage(Toolchain.getToolchainVersion(getProject()));
+        }
         HashSet<File> artifacts = new HashSet<>();
 
         if (getOptions().isNativeImage()) {

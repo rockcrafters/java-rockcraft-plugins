@@ -132,6 +132,9 @@ public abstract class AbstractRockMojo extends AbstractMojo {
         options.setRockcraftYaml(rockcraftYaml);
         options.setCreateService(createService);
         options.setNativeImage(isNativeImageRequested());
+        if ("".equals(options.getBuildPackage())) {
+            options.setBuildPackage(Toolchain.getToolchainVersion(getProject()));
+        }
     }
 
     private boolean isNativeImageRequested() {

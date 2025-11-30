@@ -49,7 +49,7 @@ public final class CreateBuildRockMojo extends AbstractMojo {
     private MavenSession session;
 
     @Parameter(property = "buildPackage")
-    private final String buildPackage = "openjdk-21-jdk-headless";
+    private final String buildPackage = "";
 
     @Parameter(property = "targetRelease")
     private final int targetRelease = 21;
@@ -135,6 +135,9 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         options.setRockcraftYaml(buildRockcraftYaml);
         options.setBuildGoals(buildGoals);
         options.setNativeImage(isNativeImageRequested());
+        if ("".equals(options.getBuildPackage())) {
+            options.setBuildPackage(Toolchain.getToolchainVersion(project));
+        }
     }
 
     /**

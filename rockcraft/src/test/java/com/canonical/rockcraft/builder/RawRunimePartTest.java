@@ -37,6 +37,7 @@ public class RawRunimePartTest {
     @Test
     void rawRuntimePart() {
         RockcraftOptions options = new RockcraftOptions();
+        options.setBuildPackage("openjdk-21-jdk");
         RawRuntimePart part = new RawRuntimePart(options);
         Map<String, Object> code = part.getRuntimePart(input);
         assertEquals("nil", code.get("plugin"));
