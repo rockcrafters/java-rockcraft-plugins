@@ -32,18 +32,18 @@ public final class Toolchain {
             ToolchainHelper.ToolchainPackage p = ToolchainHelper.getBuildPackage(tool);
             switch (p.getReason()) {
                 case JAVAC_ERROR:
-                    log.warn("java-rockcraft-plugin: Maven Toolchain - javac error {}, please set buildPackage configuration option: {}", tool, p.getRawOutput());
+                    log.warn("java-rockcraft-plugin: Gradle Toolchain - javac error {}, please set buildPackage configuration option: {}", tool, p.getRawOutput());
                     break;
                 case JAVAC_VERSION_STRING:
-                    log.warn("java-rockcraft-plugin: Maven Toolchain - unable to parse javac version string, please set buildPackage configuration option: {}", p.getRawOutput());
+                    log.warn("java-rockcraft-plugin: Gradle Toolchain - unable to parse javac version string, please set buildPackage configuration option: {}", p.getRawOutput());
                     break;
                 case JAVAC_UNSUPPORTED_VERSION_STRING:
-                    log.warn("java-rockcraft-plugin: Maven Toolchain - unsupported version string, please set buildPackage configuration option. {}", p.getRawOutput());
+                    log.warn("java-rockcraft-plugin: Gradle Toolchain - unsupported version string, please set buildPackage configuration option. {}", p.getRawOutput());
                     break;
             }
             return p.getName();
         } catch (IOException | InterruptedException e) {
-            log.warn("java-rockcraft-plugin: Maven Toolchain - javac error", e);
+            log.warn("java-rockcraft-plugin: Gradle Toolchain - javac error", e);
         }
         return ToolchainHelper.DEFAULT_JDK;
     }
