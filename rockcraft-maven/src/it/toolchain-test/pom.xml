@@ -3,11 +3,27 @@
     <artifactId>toolchain-test</artifactId>
     <version>1</version>
     <modelVersion>4.0.0</modelVersion>
+    <properties>
+        <toolchain.jdk.version>[11,12)</toolchain.jdk.version>
+    </properties>
     <build>
+
         <directory>${project.basedir}/target</directory>
         <outputDirectory>${project.basedir}/target/classes</outputDirectory>
         <testOutputDirectory>${project.basedir}/target/test-classes</testOutputDirectory>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-toolchains-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>select-jdk-toolchain</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>io.github.rockcrafters</groupId>
                 <artifactId>rockcraft-maven-plugin</artifactId>

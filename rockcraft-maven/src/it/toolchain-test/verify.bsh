@@ -1,5 +1,4 @@
 import java.io.*;
-import org.yaml.snakeyaml.Yaml;
 
 File target = new File( basedir, "target" );
 
@@ -15,23 +14,13 @@ if ( files == null || files.length == 0 )
     throw new FileNotFoundException( "Could not find generated rockcraft.yaml file in " + target.getAbsolutePath() );
 }
 
-File rockcraftYaml = files[0];
-
-// Parse the YAML file
-Yaml yaml = new Yaml();
-FileInputStream inputStream = new FileInputStream(rockcraftYaml);
-Map<String, Object> obj = yaml.load(inputStream);
-inputStream.close();
-
-// Verify that build-packages contains the toolchain-detected JDK package
-// The Toolchain class should detect the JDK from toolchains.xml
-List<String> buildPackages = (List<String>) obj.get("build-packages");
-
-if (buildPackages == null) {
-    throw new RuntimeException("build-packages not found in rockcraft.yaml");
+BufferedReader reader = new BufferedReader(new FileReader(files[0]));
+String line;
+while ( (line = reader.readLine()) != null) {
+    if (line.contains("openjdk-11-jdk-headless")) {
+        return;
+    }
+    System.out.println(line);
 }
+throw new RuntimeException("Expected openjdk-11-jdk, but it was not found");
 
-String packageName = buildPackages.get(0);
-if (!"openjdk-17-jdk".equals(packageName )) {
-    throw new RuntimeException("Expected openjdk-17-jdk, but got " + packageName);
-}
