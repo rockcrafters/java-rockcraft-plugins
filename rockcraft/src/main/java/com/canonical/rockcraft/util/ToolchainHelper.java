@@ -32,7 +32,7 @@ public final class ToolchainHelper {
             this.rawOutput = output;
         }
         public String getName() { return name; }
-        public Reason getReason() { return reason;}
+        public Reason getReason() { return reason; }
         public String getRawOutput() { return rawOutput; }
     }
 
