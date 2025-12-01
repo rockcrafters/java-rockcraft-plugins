@@ -84,22 +84,11 @@ public abstract class BaseRockcraftTest {
     @AfterEach
     protected void tearDown() throws IOException, InterruptedException {
         new ProcessBuilder("rm", "-rf", projectDir.getAbsolutePath()).start().waitFor();
-        // lxc list --project rockcraft --format csv -c n | grep -v base-instance | xargs lxc delete -f --project rockcraft
-        List<Process> pipeline = ProcessBuilder.startPipeline(
-                Arrays.asList(
-                        new ProcessBuilder("lxc",
-                                "list",
-                                "--project", "rockcraft",
-                                "--format", "csv",
-                                "-c", "n"),
-                        new ProcessBuilder("grep", "-v", "base-instance"),
-                        new ProcessBuilder("xargs",
-                                "lxc",
-                                "delete",
-                                "-f",
-                                "--project", "rockcraft").redirectErrorStream(true)));
-
-        Process cleanup = pipeline.get(pipeline.size() - 1);
+        final String cleanCommand
+                = "lxc list --project rockcraft --format csv -c n | grep -v base-instance | xargs lxc delete -f --project rockcraft";
+        Process cleanup = new ProcessBuilder("/usr/bin/sh", "-c", cleanCommand)
+                .redirectErrorStream(true)
+                .start();
         int exitCode = cleanup.waitFor();
         if (exitCode != 0) {
             System.err.println("Cleanup exited: " + exitCode);
