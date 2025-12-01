@@ -20,7 +20,6 @@ public class BuildRockcraftOptions extends CommonRockcraftOptions {
 
     public BuildRockcraftOptions() {
         super();
-        setBuildPackage("openjdk-21-jdk-headless");
     }
 
     public String[] getBuildGoals() {
