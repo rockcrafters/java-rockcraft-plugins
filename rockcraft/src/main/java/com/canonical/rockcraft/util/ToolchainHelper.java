@@ -66,10 +66,10 @@ public final class ToolchainHelper {
         String major = versions[0];
         String minor = versions[1];
         if ("1".equals(major) && "8".equals(minor)) { // 1.8
-            return new ToolchainPackage("openjdk-8-jdk", Reason.REASON_OK, output.toString());
+            return new ToolchainPackage("openjdk-8-jdk-headless", Reason.REASON_OK, output.toString());
         }
         if (SUPPORTED.contains(major)) {
-            return new ToolchainPackage("openjdk-" + major + "-jdk", Reason.REASON_OK, output.toString());
+            return new ToolchainPackage("openjdk-" + major + "-jdk-headless", Reason.REASON_OK, output.toString());
         }
         return new ToolchainPackage(DEFAULT_JDK, Reason.JAVAC_UNSUPPORTED_VERSION_STRING, output.toString());
     }

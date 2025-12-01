@@ -34,7 +34,7 @@ public class ToolchainTest {
 
         String result = Toolchain.getToolchainPackage(null, mockManager, mockLog);
         assertEquals("", output.toString());
-        assertEquals("openjdk-8-jdk", result);
+        assertEquals("openjdk-8-jdk-headless", result);
     }
 
     @Test
