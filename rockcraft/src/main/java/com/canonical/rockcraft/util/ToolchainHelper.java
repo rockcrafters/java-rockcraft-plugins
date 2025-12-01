@@ -9,8 +9,8 @@ import java.util.HashSet;
 
 public final class ToolchainHelper {
 
-    public static String DEFAULT_JDK = "openjdk-21-jdk";
-    private static HashSet<String> SUPPORTED = new HashSet<>(Arrays.asList("11", "17", "21", "25"));
+    public final static String DEFAULT_JDK = "openjdk-21-jdk";
+    private final static HashSet<String> SUPPORTED = new HashSet<>(Arrays.asList("11", "17", "21", "25"));
 
     private ToolchainHelper() {}
 
@@ -22,9 +22,9 @@ public final class ToolchainHelper {
     }
 
     public static class ToolchainPackage {
-        private String name;
-        private Reason reason;
-        private String rawOutput;
+        private final String name;
+        private final Reason reason;
+        private final String rawOutput;
 
         public ToolchainPackage(String name, Reason reason, String output) {
             this.name = name;
