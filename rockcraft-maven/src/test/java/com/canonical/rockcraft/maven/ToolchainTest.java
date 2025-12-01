@@ -64,7 +64,7 @@ public class ToolchainTest {
 
         String result = Toolchain.getToolchainPackage(null, mockManager, mockLog);
         assertEquals("java-rockcraft-plugin: Maven Toolchain - javac error", output.toString());
-        assertEquals("openjdk-21-jdk", result);
+        assertEquals("openjdk-21-jdk-headless", result);
     }
 
     @Test
@@ -92,7 +92,7 @@ public class ToolchainTest {
 
         String result = Toolchain.getToolchainPackage(null, mockManager, mockLog);
         assertEquals("", output.toString());
-        assertEquals("openjdk-11-jdk", result);
+        assertEquals("openjdk-11-jdk-headless", result);
     }
 
 }

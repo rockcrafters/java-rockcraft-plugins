@@ -126,7 +126,7 @@ public class CreateBuildRockTest extends BaseRockcraftTest {
             List<String> packages = (List<String>)openjdk.get("build-packages");
             // toolchain is specified, so the build uses openjdk-17
             assertEquals(1, packages.size());
-            assertEquals("openjdk-17-jdk", packages.get(0));
+            assertEquals("openjdk-17-jdk-headless", packages.get(0));
         }
     }
 }
