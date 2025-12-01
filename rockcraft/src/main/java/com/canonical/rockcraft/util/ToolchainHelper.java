@@ -10,7 +10,7 @@ import java.util.HashSet;
 public final class ToolchainHelper {
 
     public final static String DEFAULT_JDK = "openjdk-21-jdk";
-    private final static HashSet<String> SUPPORTED = new HashSet<>(Arrays.asList("11", "17", "21", "25"));
+    private final static HashSet<String> SUPPORTED = new HashSet<>(Arrays.asList("11", "17", "21"));
 
     private ToolchainHelper() {}
 
