@@ -51,10 +51,9 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Setup openjdk-8 package
+      - name: Setup openjdk packages
         run: |
-          sudo apt-get update -y && sudo apt-get install -yq openjdk-8-jdk
-
+          sudo apt-get update -y && sudo apt-get install -yq openjdk-8-jdk openjdk-11-jdk
 
       - name: Build and verify Maven sample projects
         run: |
@@ -76,10 +75,9 @@ jobs:
         with: # running setup-java again overwrites the settings.xml
           distribution: 'temurin'
           java-version: '21'
-
-      - name: Setup openjdk-8 package
+      - name: Setup openjdk packages
         run: |
-          sudo apt-get update -y && sudo apt-get install -yq openjdk-8-jdk
+          sudo apt-get update -y && sudo apt-get install -yq openjdk-8-jdk openjdk-11-jdk
 
       - name: Setup LXD
         uses: canonical/setup-lxd@main
