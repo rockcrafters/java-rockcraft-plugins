@@ -16,7 +16,11 @@ package com.canonical.rockcraft.gradle;
 import com.canonical.rockcraft.builder.RockCrafter;
 import com.canonical.rockcraft.builder.RockcraftOptions;
 import org.gradle.api.Task;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.jvm.toolchain.JavaCompiler;
+import org.gradle.jvm.toolchain.JavaToolchainSpec;
+import org.gradle.jvm.toolchain.JvmImplementation;
 
 
 import javax.inject.Inject;
@@ -48,7 +52,7 @@ public abstract class CreateRockcraftTask extends AbstractRockcraftTask {
     @TaskAction
     public void writeRockcraft() {
         if ("".equals(getOptions().getBuildPackage())) {
-            getOptions().setBuildPackage(Toolchain.getToolchainVersion(getProject()));
+            getOptions().setBuildPackage(Toolchain.getToolchainPackage(getProject(), getToolchainService(), getLogger()));
         }
         HashSet<File> artifacts = new HashSet<>();
 

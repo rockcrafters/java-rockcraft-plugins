@@ -24,7 +24,7 @@ import java.io.IOException;
  * This task builds a ROCK image by calling <i>rockcraft pack</i>.
  * It removes all previous ROCK artifacts from the build directory.
  */
-public class BuildRockcraftTask extends AbstractRockcraftTask {
+public abstract class BuildRockcraftTask extends AbstractRockcraftTask {
 
 
     /**

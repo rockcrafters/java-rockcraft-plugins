@@ -16,16 +16,20 @@ package com.canonical.rockcraft.gradle;
 import com.canonical.rockcraft.builder.RockcraftOptions;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.Input;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 
 import javax.inject.Inject;
 
 /**
  * Base class for rockcraft tasks
  */
-public class AbstractRockcraftTask extends DefaultTask {
+public abstract class AbstractRockcraftTask extends DefaultTask {
 
     @Input
     private final RockcraftOptions options;
+
+    @Inject
+    protected abstract JavaToolchainService getToolchainService();
 
     /**
      * Constructs the CreateRockcraft task
