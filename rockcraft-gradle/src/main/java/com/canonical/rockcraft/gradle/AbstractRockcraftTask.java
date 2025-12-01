@@ -23,13 +23,10 @@ import javax.inject.Inject;
 /**
  * Base class for rockcraft tasks
  */
-public abstract class AbstractRockcraftTask extends DefaultTask {
+public class AbstractRockcraftTask extends DefaultTask {
 
     @Input
     private final RockcraftOptions options;
-
-    @Inject
-    protected abstract JavaToolchainService getToolchainService();
 
     /**
      * Constructs the CreateRockcraft task

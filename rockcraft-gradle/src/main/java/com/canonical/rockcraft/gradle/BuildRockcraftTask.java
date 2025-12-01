@@ -16,6 +16,7 @@ package com.canonical.rockcraft.gradle;
 import com.canonical.rockcraft.builder.RockBuilder;
 import com.canonical.rockcraft.builder.RockcraftOptions;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -26,6 +27,8 @@ import java.io.IOException;
  */
 public abstract class BuildRockcraftTask extends AbstractRockcraftTask {
 
+    @Inject
+    protected abstract JavaToolchainService getToolchainService();
 
     /**
      * Constructs BuildRockcraftTask

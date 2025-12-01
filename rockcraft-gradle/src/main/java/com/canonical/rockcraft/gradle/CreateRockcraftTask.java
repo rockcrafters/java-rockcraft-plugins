@@ -17,6 +17,7 @@ import com.canonical.rockcraft.builder.RockCrafter;
 import com.canonical.rockcraft.builder.RockcraftOptions;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 
 
 import javax.inject.Inject;
@@ -30,6 +31,9 @@ import java.util.Set;
  * This task writes <i>rockcraft.yaml</i> file for the application.
  */
 public abstract class CreateRockcraftTask extends AbstractRockcraftTask {
+
+    @Inject
+    protected abstract JavaToolchainService getToolchainService();
 
     /**
      * Constructs CreateRockcraftTask

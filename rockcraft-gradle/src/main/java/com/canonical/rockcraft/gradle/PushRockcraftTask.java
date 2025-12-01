@@ -10,7 +10,7 @@ import java.io.IOException;
 /**
  * This task pushes rock image to the local docker
  */
-public abstract class PushRockcraftTask extends AbstractRockcraftTask {
+public class PushRockcraftTask extends AbstractRockcraftTask {
 
     /**
      * Constructs PushRockcraftTask
