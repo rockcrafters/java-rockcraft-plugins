@@ -50,7 +50,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
       - name: Setup openjdk-8 package
         run: |
           sudo apt-get update -y && sudo apt-get install -yq openjdk-8-jdk
@@ -75,7 +75,7 @@ jobs:
         uses: actions/setup-java@v5
         with: # running setup-java again overwrites the settings.xml
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '21'
 
       - name: Setup openjdk-8 package
         run: |
