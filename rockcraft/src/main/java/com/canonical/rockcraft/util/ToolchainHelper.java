@@ -9,7 +9,7 @@ import java.util.HashSet;
 
 public final class ToolchainHelper {
 
-    public static final String DEFAULT_JDK = "openjdk-21-jdk";
+    public static final String DEFAULT_JDK = "openjdk-21-jdk-headless";
     private static final HashSet<String> SUPPORTED = new HashSet<>(Arrays.asList("11", "17", "21"));
 
     private ToolchainHelper() {}
