@@ -18,6 +18,7 @@ import com.canonical.rockcraft.builder.BuildRockcraftOptions;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -32,6 +33,9 @@ import java.util.Set;
 public abstract class CreateBuildRockcraftTask extends DefaultTask {
 
     private final BuildRockcraftOptions options;
+
+    @Inject
+    protected abstract JavaToolchainService getToolchainService();
 
     /**
      * Construct CreateBuildRockcraftTask
@@ -53,6 +57,9 @@ public abstract class CreateBuildRockcraftTask extends DefaultTask {
     @TaskAction
     @SuppressWarnings("unchecked")
     public void writeRockcraft() throws IOException {
+        if ("".equals(options.getBuildPackage())) {
+            options.setBuildPackage(Toolchain.getToolchainPackage(getProject(), getToolchainService(), getLogger()));
+        }
         HashSet<File> artifacts = new HashSet<>();
         Set<Object> dependsOn = getDependsOn();
         for (Object entry : dependsOn) {

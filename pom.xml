@@ -5,8 +5,7 @@
     <version>1.2.2</version>
     <packaging>pom</packaging>
     <properties>
-        <maven.compiler.target>8</maven.compiler.target>
-        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.release>8</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.outputTimestamp>2023-01-01T00:00:00Z</project.build.outputTimestamp>
         <gpr.repo>https://maven.pkg.github.com/rockcrafters/java-rockcraft-plugins</gpr.repo>

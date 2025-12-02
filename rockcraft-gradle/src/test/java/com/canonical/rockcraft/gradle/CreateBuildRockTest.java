@@ -115,4 +115,21 @@ public class CreateBuildRockTest extends BaseRockcraftTest {
             assertTrue(String.valueOf(buildTool.get("override-build")).contains("wget"));
         }
     }
+
+    @Test
+    public void testToolchainOption() throws IOException {
+        writeString(getBuildFile(), getResource("toolchain-options.in"));
+        BuildResult result = runBuild("create-build-rock", "--stacktrace");
+        assertEquals(TaskOutcome.SUCCESS, getLastTaskOutcome(result)); // the build needs to succeed
+        try (FileInputStream is = new FileInputStream(Paths.get(getProjectDir().getAbsolutePath(), "build", IRockcraftNames.BUILD_ROCK_OUTPUT, IRockcraftNames.ROCKCRAFT_YAML).toFile())) {
+            Yaml yaml = new Yaml();
+            Map<String, Object> parsed = yaml.load(is);
+            Map<String, Object> parts = (Map<String, Object>) parsed.get("parts");
+            Map<String, Object> openjdk = (Map<String, Object>) parts.get("openjdk");
+            List<String> packages = (List<String>)openjdk.get("build-packages");
+            // toolchain is specified, so the build uses openjdk-17
+            assertEquals(1, packages.size());
+            assertEquals("openjdk-17-jdk-headless", packages.get(0));
+        }
+    }
 }

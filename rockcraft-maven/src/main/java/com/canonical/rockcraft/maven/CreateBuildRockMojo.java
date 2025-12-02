@@ -17,6 +17,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
+import org.apache.maven.toolchain.ToolchainManager;
 import org.eclipse.aether.RepositorySystemSession;
 import org.xml.sax.SAXException;
 
@@ -43,13 +44,16 @@ public final class CreateBuildRockMojo extends AbstractMojo {
     private RuntimeInformation runtimeInformation;
 
     @Component
+    private ToolchainManager toolchainManager;
+
+    @Component
     private MavenProject project;
 
     @Parameter(defaultValue = "${session}", readonly = true, required = true)
     private MavenSession session;
 
     @Parameter(property = "buildPackage")
-    private final String buildPackage = "openjdk-21-jdk-headless";
+    private final String buildPackage = "";
 
     @Parameter(property = "targetRelease")
     private final int targetRelease = 21;
@@ -135,6 +139,9 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         options.setRockcraftYaml(buildRockcraftYaml);
         options.setBuildGoals(buildGoals);
         options.setNativeImage(isNativeImageRequested());
+        if ("".equals(options.getBuildPackage())) {
+            options.setBuildPackage(Toolchain.getToolchainPackage(session, toolchainManager, getLog()));
+        }
     }
 
     /**
@@ -200,4 +207,3 @@ public final class CreateBuildRockMojo extends AbstractMojo {
         return nativeProfileActivated && nativeCompileGoalRequested;
     }
 }
-

@@ -1,0 +1,29 @@
+plugins {
+    id('application')
+    id('io.github.rockcrafters.rockcraft')
+    id("io.gitlab.plunts.plantuml") version "2.0.0"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation platform('org.springframework.boot:spring-boot-dependencies:2.7.9')
+    implementation 'org.springframework.boot:spring-boot-starter:2.7.9'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.9'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17) // Specify your desired Java version
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'Test'
+    }
+}

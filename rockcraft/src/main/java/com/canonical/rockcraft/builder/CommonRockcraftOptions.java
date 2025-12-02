@@ -22,7 +22,7 @@ import java.util.List;
  * Provides common options for rockcraft.yaml generation
  */
 public class CommonRockcraftOptions {
-    private String buildPackage = "openjdk-21-jdk";
+    private String buildPackage = "";
     private String summary = "";
     private Path description = null;
     private String source;
