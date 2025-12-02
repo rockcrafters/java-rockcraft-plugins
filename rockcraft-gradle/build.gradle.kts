@@ -46,9 +46,13 @@ gradlePlugin {
 
 tasks.named<Test>("test") {
     // Use JUnit Jupiter for unit tests.
-    useJUnitPlatform()
+    useJUnitPlatform() {
+        val testTags: String? by project
+        if (testTags != null) {
+            includeTags.add(testTags)
+        }
+    }
 }
-
 tasks.withType<JavaCompile> {
     val compilerArgs = options.compilerArgs
     compilerArgs.add("-Xlint:all")
