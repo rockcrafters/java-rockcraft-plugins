@@ -30,6 +30,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: gradle
 
       - name: Build and verify Gradle sample projects
         run: |
@@ -50,7 +51,8 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
+          cache: maven
       - name: Setup openjdk packages
         run: |
           sudo apt-get update -y && sudo apt-get install -yq openjdk-8-jdk openjdk-11-jdk
@@ -64,7 +66,7 @@ jobs:
           done
 
   build-maven:
-    name: Build Maven
+    name: Test Maven
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -74,7 +76,8 @@ jobs:
         uses: actions/setup-java@v5
         with: # running setup-java again overwrites the settings.xml
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
+          cache: maven
       - name: Setup openjdk packages
         run: |
           sudo apt-get update -y && sudo apt-get install -yq openjdk-8-jdk openjdk-11-jdk
@@ -95,13 +98,23 @@ jobs:
           mvn -B install invoker:install invoker:run
 
   build-gradle:
-    name: Build Gradle
+    name: Test Gradle
     runs-on: ubuntu-latest
+    # the matrix lists known test tags and untagged tests ( none() )
+    strategy:
+      matrix:
+        test-tag: [ dependencies, buildRock, rock, springBoot, plugin, none() ]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+          cache: gradle
+      - name: Setup OpenJDK packages
         run: |
           sudo apt-get update
           sudo apt-get install -y openjdk-8-jdk-headless
@@ -117,18 +130,5 @@ jobs:
 
       - name: Build and verify gradle project
         run: |
-          ./gradlew clean build -i
+          ./gradlew clean build -i -PtestTags="${{ matrix.test-tag }}"
 
-      - name: Publish Snapshots
-        if: github.ref == 'refs/heads/master'
-        run: |
-          # Find project version
-          ver=$(./gradlew properties -q | grep "version:" | awk '{print $2}')
-          # deploy if snapshot found
-          if [[ $ver == *"SNAPSHOT"* ]]
-          then
-              sudo snap install rockcraft --classic
-              lxd init --auto
-              ./gradlew publish
-          fi
-        shell: bash
