@@ -16,7 +16,6 @@ package com.canonical.rockcraft.gradle;
 import com.canonical.rockcraft.builder.RockcraftOptions;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.Input;
-import org.gradle.jvm.toolchain.JavaToolchainService;
 
 import javax.inject.Inject;
 
