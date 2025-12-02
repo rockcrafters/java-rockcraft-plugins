@@ -23,8 +23,6 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -58,7 +56,7 @@ public abstract class BaseRockcraftTest {
     protected String getResource(String file) throws IOException {
         try (BufferedReader r = new BufferedReader( new InputStreamReader(getClass().getResourceAsStream(file)))) {
             StringBuilder builder = new StringBuilder();
-            String line = null;
+            String line;
             while ((line = r.readLine()) != null) {
                 builder.append(line);
                 builder.append("\n");

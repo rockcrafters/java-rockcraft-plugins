@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RockcraftPluginTest extends BaseRockcraftTest {
 
     @Test
-    void buildRockTest() throws IOException {
+    void buildRockTest() {
         BuildResult result = runBuild("build-rock");
         assertEquals(TaskOutcome.SUCCESS, getLastTaskOutcome(result)); // the build needs to succeed
     }
@@ -41,6 +41,7 @@ class RockcraftPluginTest extends BaseRockcraftTest {
      * Make a separate test for pushing, so that it could be excluded in docker-less
      * scenarios
      * @throws IOException
+     * @throws InterruptedException
      */
     @Test
     void pushRockTest() throws IOException, InterruptedException {
@@ -59,7 +60,7 @@ class RockcraftPluginTest extends BaseRockcraftTest {
         try (FileInputStream is = new FileInputStream(Paths.get(getProjectDir().getAbsolutePath(), "build", "rockcraft.yaml").toFile())) {
             Yaml yaml = new Yaml();
             Map<String, Map<String, Object>> parsed = yaml.load(is);
-            assertEquals("ubuntu@24.04", parsed.get("build-base"));
+            assertEquals("ubuntu@24.04", parsed.get("build-base").toString());
             Map<String, Object> parts = parsed.get("parts");
             //
             Map<String, Object> dumpPart = (Map<String, Object>) parts.get("gradle/rockcraft/dump");

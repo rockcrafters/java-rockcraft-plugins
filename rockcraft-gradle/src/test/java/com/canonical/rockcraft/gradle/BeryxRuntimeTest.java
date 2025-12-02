@@ -64,11 +64,9 @@ public class BeryxRuntimeTest extends BaseRockcraftTest {
 
     /**
      * Integration test - the rock should build successfully
-     *
-     * @throws IOException
      */
     @Test
-    public void testBeryxJlinkBuild() throws IOException {
+    public void testBeryxJlinkBuild() {
         BuildResult result = runBuild("build-rock", "--stacktrace");
         assertEquals(TaskOutcome.SUCCESS, getLastTaskOutcome(result)); // the build needs to succeed
     }
