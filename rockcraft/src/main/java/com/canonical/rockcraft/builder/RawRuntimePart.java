@@ -43,7 +43,9 @@ public class RawRuntimePart implements IRuntimeProvider {
         HashMap<String, Object> part = new HashMap<String, Object>();
         part.put("plugin", "nil");
         String jrePackage = options.getBuildPackage().replace("-jdk", "-jre");
-
+        if (!jrePackage.endsWith("-headless")) {
+            jrePackage += "-headless";
+        }
         if (options.isJava8()) {
             part.put("stage-packages", new String[] {
                     "openjdk-8-jre-headless_core",
@@ -59,9 +61,20 @@ public class RawRuntimePart implements IRuntimeProvider {
             });
         } else {
             part.put("stage-packages", new String[] {
-                    options.getBuildPackage() + "_standard",
+                    jrePackage + "_standard",
             });
         }
+        StringBuilder overrideCommands = new StringBuilder();
+        overrideCommands.append("export JAVA_HOME=\"$(dirname $(dirname $(find ${CRAFT_PART_INSTALL} -name java -type f -printf '%P\\n' -quit 2>/dev/null)))\"\n");
+        overrideCommands.append("cd ${CRAFT_PART_INSTALL}\n");
+        overrideCommands.append("mkdir -p usr/bin\n");
+        overrideCommands.append("TOOLS=\"$(find ${CRAFT_PART_INSTALL}/${JAVA_HOME}/bin -type f -executable -printf '%P\\n')\"\n");
+        overrideCommands.append("for tool in ${TOOLS}; do\n");
+        overrideCommands.append("   /usr/bin/ln -s --relative \"${JAVA_HOME}/bin/${tool}\" usr/bin/\n");
+        overrideCommands.append("done\n");
+        overrideCommands.append("mkdir -p ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/ &&  cp /etc/ssl/certs/java/cacerts ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/cacerts\n");
+        overrideCommands.append("\ncraftctl default\n");
+        part.put("override-build", overrideCommands);
         part.put("after", new String[]{"gradle/rockcraft/dump", "gradle/rockcraft/deps"});
         return part;
     }

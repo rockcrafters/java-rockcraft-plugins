@@ -13,6 +13,7 @@
  */
 package com.canonical.rockcraft.builder;
 
+import com.canonical.rockcraft.util.ToolchainHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,38 +35,25 @@ public class RawRuntimePartTest {
     }
 
     @Test
-    void rawRuntimePart() {
-        RockcraftOptions options = new RockcraftOptions();
-        options.setBuildPackage("openjdk-21-jdk");
-        RawRuntimePart part = new RawRuntimePart(options);
-        Map<String, Object> code = part.getRuntimePart(input);
-        assertEquals("nil", code.get("plugin"));
-        String[] ret = (String[]) code.get("build-packages");
-        assertEquals("openjdk-21-jdk", ret[0]);
-        assertTrue(code.get("override-build").toString().contains("--multi-release 21"));
-    }
-
-    @Test
     void rawRuntimeCustomOpenjdk() {
         RockcraftOptions options = new RockcraftOptions();
         options.setTargetRelease(8);
         options.setBuildPackage("openjdk-11-jdk");
         RawRuntimePart part = new RawRuntimePart(options);
         Map<String, Object> code = part.getRuntimePart(input);
-        String[] ret = (String[]) code.get("build-packages");
-        assertEquals("openjdk-11-jdk", ret[0]);
-        assertTrue(code.get("override-build").toString().contains("--multi-release 8"));
+        String[] ret = (String[]) code.get("stage-packages");
+        assertEquals("openjdk-11-jre-headless_standard", ret[0]);
+        assertTrue(code.get("override-build").toString().contains("TOOLS="));
     }
 
     @Test
-    void rawRuntimeMultipleJars() {
+    void rawRuntimeOpenJDK8() {
         RockcraftOptions options = new RockcraftOptions();
         options.setJlink(false);
+        options.setBuildPackage(ToolchainHelper.OPENJDK_8);
         RawRuntimePart part = new RawRuntimePart(options);
         Map<String, Object> code = part.getRuntimePart(input);
-        // classpath should contain both embeeded jars from the boot jar and every jar found in the jar directory
-        // to avoid building incomplete runtime if the dependencies are packaged separately
-        assertTrue(code.get("override-build").toString().contains("for file in $(find \"${CRAFT_PART_BUILD}/tmp\" -type f -name \"*.jar\"); do"));
-        assertTrue(code.get("override-build").toString().contains("for file in $(find \"${CRAFT_STAGE}\" -type f -name \"*.jar\"); do"));
+        String[] ret = (String[]) code.get("stage-packages");
+        assertEquals("openjdk-8-jre-headless_core", ret[0]);
     }
 }
