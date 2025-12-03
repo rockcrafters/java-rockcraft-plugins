@@ -182,6 +182,6 @@ public class CommonRockcraftOptions {
     }
 
     public boolean isJava8() {
-        return ToolchainHelper.OPENJDK_8.equals(getBuildPackage()) ||ToolchainHelper.OPENJDK_8_HEADLESS.equals(getBuildPackage());
+        return ToolchainHelper.OPENJDK_8.equals(getBuildPackage()) || ToolchainHelper.OPENJDK_8_HEADLESS.equals(getBuildPackage());
     }
 }
