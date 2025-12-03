@@ -46,6 +46,7 @@ public class RawRuntimePart implements IRuntimeProvider {
         if (!jrePackage.endsWith("-headless")) {
             jrePackage += "-headless";
         }
+        part.put("build-packages", new String[] {options.getBuildPackage()});
         if (options.isJava8()) {
             part.put("stage-packages", new String[] {
                     "openjdk-8-jre-headless_core",
