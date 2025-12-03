@@ -75,7 +75,7 @@ public class RawRuntimePart implements IRuntimeProvider {
         overrideCommands.append("done\n");
         overrideCommands.append("mkdir -p ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/ &&  cp /etc/ssl/certs/java/cacerts ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/cacerts\n");
         overrideCommands.append("\ncraftctl default\n");
-        part.put("override-build", overrideCommands);
+        part.put("override-build", overrideCommands.toString());
         part.put("after", new String[]{"gradle/rockcraft/dump", "gradle/rockcraft/deps"});
         return part;
     }
