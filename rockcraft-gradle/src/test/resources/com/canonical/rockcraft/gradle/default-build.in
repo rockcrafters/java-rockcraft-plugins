@@ -3,6 +3,12 @@ plugins {
     id('io.github.rockcrafters.rockcraft')
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 jar {
     manifest {
         attributes 'Main-Class': 'Test'

@@ -9,6 +9,8 @@ import java.util.HashSet;
 
 public final class ToolchainHelper {
 
+    public static final String OPENJDK_8 = "openjdk-8-jdk";
+    public static final String OPENJDK_8_HEADLESS = "openjdk-8-jdk-headless";
     public static final String DEFAULT_JDK = "openjdk-21-jdk-headless";
     private static final HashSet<String> SUPPORTED = new HashSet<>(Arrays.asList("11", "17", "21"));
 
@@ -65,8 +67,8 @@ public final class ToolchainHelper {
         }
         String major = versions[0];
         String minor = versions[1];
-        if ("1".equals(major) && "8".equals(minor)) { // 1.8
-            return new ToolchainPackage("openjdk-8-jdk-headless", Reason.REASON_OK, output.toString());
+        if ("1".equals(major) && "8".equals(minor)) { // 1.8, special case - this use-case requires OpenJDK 8
+            return new ToolchainPackage(OPENJDK_8_HEADLESS, Reason.REASON_OK, output.toString());
         }
         if (SUPPORTED.contains(major)) {
             return new ToolchainPackage("openjdk-" + major + "-jdk-headless", Reason.REASON_OK, output.toString());

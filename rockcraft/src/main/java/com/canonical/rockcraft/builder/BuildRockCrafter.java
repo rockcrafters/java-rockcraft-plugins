@@ -91,7 +91,11 @@ public class BuildRockCrafter extends AbstractRockCrafter {
     private Map<String, Object> createParts(RockProjectSettings settings, BuildRockcraftOptions options, List<File> files) {
         Map<String, Object> parts = new HashMap<>();
         parts.put("dependencies", createDependenciesPart());
-        parts.put("openjdk", createOpenJDKPart());
+        if (options.isJava8()) {
+            parts.put("openjdk", createOpenJDK8Part());
+        } else {
+            parts.put("openjdk", createOpenJDKPart());
+        }
         parts.put("maven-cache", createMavenRepository(settings, options, files));
         if (settings.getBuildSystem() == BuildSystem.maven) {
             parts.put("maven-settings", createMavenSettings());
@@ -288,7 +292,6 @@ public class BuildRockCrafter extends AbstractRockCrafter {
                 "base-files_release-info",
                 "base-passwd_data",
                 "bash_bins",
-                "ca-certificates_data",
                 "coreutils_bins",
                 "debianutils_which",
                 "findutils_bins",
@@ -303,6 +306,11 @@ public class BuildRockCrafter extends AbstractRockCrafter {
                 "procps_bins"));
         slices.add("git_bins");
         slices.add("git_http-support");
+
+        // openjdk-8 stages the JDK package
+        if (!getOptions().isJava8()) {
+            slices.add("ca-certificates_data");
+        }
 
         if (getOptions().getSource() != null) {
             part.put("source", getOptions().getSource());
@@ -336,6 +344,26 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         overrideCommands.append(SET_UBUNTU_OWNER_COMMAND);
         overrideCommands.append("\ncraftctl default\n");
         part.put("override-build", overrideCommands.toString());
+        return part;
+    }
+
+    private Map<String, Object> createOpenJDK8Part() {
+        Map<String, Object> part = new HashMap<>();
+        part.put("plugin", "nil");
+        part.put("source", ".");
+        part.put("stage-packages", new String[]{options.getBuildPackage()});
+        part.put("after", new String[]{"dependencies"});
+
+        StringBuilder overrideCommands = new StringBuilder();
+        overrideCommands.append("cd ${CRAFT_PART_INSTALL}\n");
+        overrideCommands.append("mkdir -p usr/bin\n");
+        overrideCommands.append("TOOLS=\"$(find ${CRAFT_PART_INSTALL}/usr/lib/jvm/java-8-openjdk-${CRAFT_ARCH_BUILD_FOR}/bin -type f -executable -printf '%P\\n')\"\n");
+        overrideCommands.append("for tool in ${TOOLS}; do\n");
+        overrideCommands.append("   /usr/bin/ln -s --relative \"usr/lib/jvm/java-8-openjdk-${CRAFT_ARCH_BUILD_FOR}/bin/${tool}\" usr/bin/\n");
+        overrideCommands.append("done\n");
+        overrideCommands.append("\ncraftctl default\n");
+        part.put("override-build", overrideCommands.toString());
+
         return part;
     }
 

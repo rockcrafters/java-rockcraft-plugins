@@ -13,6 +13,8 @@
  */
 package com.canonical.rockcraft.builder;
 
+import com.canonical.rockcraft.util.ToolchainHelper;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -177,5 +179,9 @@ public class CommonRockcraftOptions {
         if (rockcraftYaml != null) {
             this.rockcraftYaml = Paths.get(rockcraftYaml);
         }
+    }
+
+    public boolean isJava8() {
+        return ToolchainHelper.OPENJDK_8.equals(getBuildPackage()) || ToolchainHelper.OPENJDK_8_HEADLESS.equals(getBuildPackage());
     }
 }

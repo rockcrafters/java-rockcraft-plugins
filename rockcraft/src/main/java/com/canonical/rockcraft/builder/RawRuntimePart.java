@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Uses a verbose list of commands to generate Java runtime
+ * Uses chisel slices to generate the java runtime. Default for Java 8
  */
 public class RawRuntimePart implements IRuntimeProvider {
 
@@ -33,11 +33,6 @@ public class RawRuntimePart implements IRuntimeProvider {
         this.options = options;
     }
 
-    private void append(StringBuilder buffer, String str) {
-        buffer.append(str);
-        buffer.append("\n");
-    }
-
     /**
      * Generate code to create Java runtime image
      * @param files - list of jar files to analyze
@@ -47,42 +42,40 @@ public class RawRuntimePart implements IRuntimeProvider {
     public Map<String, Object> getRuntimePart(List<File> files) {
         HashMap<String, Object> part = new HashMap<String, Object>();
         part.put("plugin", "nil");
-        part.put("build-packages", new String[]{options.getBuildPackage()});
-
-        StringBuilder jarList = new StringBuilder();
-        for (File jar : files) {
-            if (jarList.length() > 0)
-                jarList.append(" ");
-            jarList.append(String.format("${CRAFT_STAGE}/jars/%s", jar.getName()));
+        String jrePackage = options.getBuildPackage().replace("-jdk", "-jre");
+        if (!jrePackage.endsWith("-headless")) {
+            jrePackage += "-headless";
         }
-
-        StringBuilder commands = new StringBuilder();
-        append(commands, "JAVA_HOME=$(dirname $(dirname $(readlink -f /usr/bin/java)))");
-        append(commands, "JAVA_HOME=${JAVA_HOME:1}");
-        append(commands, "PROCESS_JARS=\"" + jarList + "\"");
-        append(commands, "mkdir -p ${CRAFT_PART_BUILD}/tmp");
-        append(commands,
-                "(cd ${CRAFT_PART_BUILD}/tmp && for jar in ${PROCESS_JARS}; do jar xvf ${jar}; done;)"
-        );
-        append(commands, "CPATH=");
-        append(commands, "for file in $(find \"${CRAFT_PART_BUILD}/tmp\" -type f -name \"*.jar\"); do");
-        append(commands, "  CPATH=\"$CPATH:${file}\"");
-        append(commands, "done");
-        append(commands, "for file in $(find \"${CRAFT_STAGE}\" -type f -name \"*.jar\"); do");
-        append(commands, "  CPATH=\"$CPATH:${file}\"");
-        append(commands, "done");
-        append(commands, "echo ${CPATH}");
-        append(commands, "if [ \"x${PROCESS_JARS}\" != \"x\" ]; then");
-        append(commands, "  deps=$(jdeps --print-module-deps -q --recursive --ignore-missing-deps \\");
-        append(commands, String.format("  --multi-release %d --class-path=${CPATH} ${PROCESS_JARS}); else deps=java.base; fi", options.getTargetRelease()));
-        append(commands, "INSTALL_ROOT=${CRAFT_PART_INSTALL}/${JAVA_HOME}");
-        append(commands,
-                "rm -rf ${INSTALL_ROOT} && jlink --add-modules ${deps} --output ${INSTALL_ROOT}"
-        );
-
-        append(commands,
-                "(cd ${CRAFT_PART_INSTALL} && mkdir -p usr/bin && ln -s --relative ${JAVA_HOME}/bin/java usr/bin/)");
-        part.put("override-build", commands.toString());
+        part.put("build-packages", new String[] {options.getBuildPackage()});
+        if (options.isJava8()) {
+            part.put("stage-packages", new String[] {
+                    "openjdk-8-jre-headless_core",
+                    "openjdk-8-jre-headless_locale",
+                    "openjdk-8-jre-headless_security",
+                    "openjdk-8-jre-headless_management",
+                    "openjdk-8-jre-headless_jfr",
+                    "openjdk-8-jre-headless_tools",
+                    "openjdk-8-jre-headless_jplis",
+                    "openjdk-8-jre-headless_jndidns",
+                    "openjdk-8-jre-headless_zipfs",
+                    "openjdk-8-jre-headless_sctp",
+            });
+        } else {
+            part.put("stage-packages", new String[] {
+                    jrePackage + "_standard",
+            });
+        }
+        StringBuilder overrideCommands = new StringBuilder();
+        overrideCommands.append("export JAVA_HOME=\"$(dirname $(dirname $(find ${CRAFT_PART_INSTALL} -name java -type f -printf '%P\\n' -quit 2>/dev/null)))\"\n");
+        overrideCommands.append("cd ${CRAFT_PART_INSTALL}\n");
+        overrideCommands.append("mkdir -p usr/bin\n");
+        overrideCommands.append("TOOLS=\"$(find ${CRAFT_PART_INSTALL}/${JAVA_HOME}/bin -type f -executable -printf '%P\\n')\"\n");
+        overrideCommands.append("for tool in ${TOOLS}; do\n");
+        overrideCommands.append("   /usr/bin/ln -s --relative \"${JAVA_HOME}/bin/${tool}\" usr/bin/\n");
+        overrideCommands.append("done\n");
+        overrideCommands.append("mkdir -p ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/ &&  cp /etc/ssl/certs/java/cacerts ${CRAFT_PART_INSTALL}/etc/ssl/certs/java/cacerts\n");
+        overrideCommands.append("\ncraftctl default\n");
+        part.put("override-build", overrideCommands.toString());
         part.put("after", new String[]{"gradle/rockcraft/dump", "gradle/rockcraft/deps"});
         return part;
     }

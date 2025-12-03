@@ -2,7 +2,6 @@ base: ubuntu@24.04
 
 parts:
     gradle/rockcraft/runtime:
-        plugin: jlink
         override-build: "echo ok"
     gradle/rockcraft/dump:
         plugin: nil
