@@ -56,7 +56,7 @@ public class RockcraftOptions extends CommonRockcraftOptions {
      * @return jlink plugin flag
      */
     public boolean getJlink() {
-        return jlink;
+        return jlink && !isJava8();
     }
 
     /**
