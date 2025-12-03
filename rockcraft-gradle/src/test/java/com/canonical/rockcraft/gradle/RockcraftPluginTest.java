@@ -59,7 +59,7 @@ class RockcraftPluginTest extends BaseRockcraftTest {
         runBuild("create-rock");
         try (FileInputStream is = new FileInputStream(Paths.get(getProjectDir().getAbsolutePath(), "build", "rockcraft.yaml").toFile())) {
             Yaml yaml = new Yaml();
-            Object parsedRaw =  yaml.load(is);
+            Object parsedRaw = yaml.load(is);
             Map<String, Map<String, Object>> parsed = (Map<String, Map<String, Object>>) parsedRaw;
             assertEquals("ubuntu@24.04", ((Map<String, String>)parsedRaw).get("build-base"));
             Map<String, Object> parts = parsed.get("parts");
