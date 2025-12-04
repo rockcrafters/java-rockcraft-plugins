@@ -104,7 +104,7 @@ public class ArtifactCopy extends MavenArtifactCopy {
         try (FileOutputStream fos = new FileOutputStream(f);
              JarOutputStream target = new JarOutputStream(fos, manifest)) {
             JarEntry entry = new JarEntry("readme.txt");
-            entry.setTime(System.currentTimeMillis());
+            entry.setTime(0L);
             target.putNextEntry(entry);
             target.write("This is a placeholder jar file".getBytes());
             target.closeEntry();
