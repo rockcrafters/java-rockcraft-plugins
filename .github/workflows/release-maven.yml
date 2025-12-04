@@ -18,13 +18,15 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
           server-id: central
           server-username: MAVEN_USERNAME
           server-password: MAVEN_CENTRAL_TOKEN
           gpg-private-key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
-
+      - name: Setup openjdk packages
+        run: |
+          sudo apt-get update -y && sudo apt-get install -yq openjdk-8-jdk openjdk-11-jdk
 
       - name: Setup LXD
         uses: canonical/setup-lxd@main
