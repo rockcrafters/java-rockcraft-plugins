@@ -66,7 +66,7 @@ public class ArtifactCopy extends MavenArtifactCopy {
         String name = split.length > 1 ? split[1] : null;
         String version = split.length > 2 ? split[2] : null;
         if (group == null || name == null || version == null) {
-            logger.warn(String.format("Group, name and version should be set for the artifact %s:%s:%s", group, name, version));
+            logger.warn("Group, name and version should be set for the artifact {}:{}:{}", group, name, version);
             return;
         }
         copyToMavenRepository(f, group, name, version);
@@ -82,7 +82,7 @@ public class ArtifactCopy extends MavenArtifactCopy {
         String name = split.length > 1 ? split[1] : null;
         String version = split.length > 2 ? split[2] : null;
         if (group == null || name == null || version == null) {
-            logger.warn(String.format("Group, name and version should be set for the artifact %s:%s:%s", group, name, version));
+            logger.warn("Group, name and version should be set for the artifact {}:{}:{}", group, name, version);
             return;
         }
         Path outputLocation = getDestinationPath(group, name, version);
