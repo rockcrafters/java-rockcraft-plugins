@@ -23,6 +23,7 @@ import org.gradle.api.logging.Logging;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -87,9 +88,11 @@ public class ArtifactCopy extends MavenArtifactCopy {
         }
         Path outputLocation = getDestinationPath(group, name, version);
         String jarName = f.getName().substring(0, f.getName().length() - ".pom".length()) + ".jar";
-        File jarFile = outputLocation.resolve(jarName).toFile();
-        if (jarFile.exists()) {
-            return;
+        File jarFile = null;
+        try {
+            jarFile = Files.createFile(outputLocation.resolve(jarName)).toFile();
+        } catch (IOException ex) {
+            return; // file exists just return
         }
         createCompanionJar(jarFile);
         writeDigest(jarFile.toPath());
