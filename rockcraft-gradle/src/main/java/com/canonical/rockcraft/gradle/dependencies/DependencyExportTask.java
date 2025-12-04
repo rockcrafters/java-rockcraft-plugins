@@ -150,6 +150,7 @@ public abstract class DependencyExportTask extends DefaultTask {
                     for (ArtifactResult artifact : component.getArtifacts(MavenPomArtifact.class)) {
                         logger.debug("Found artifact " + artifact.getId());
                         artifactCopy.copyToMavenRepository(((ResolvedArtifactResult) artifact));
+                        artifactCopy.writeCompanionJar(((ResolvedArtifactResult) artifact));
                         // resolve maven dependencies to fetch poms
                         DependencyResolutionResult dependencies = pomDependencyReader.read(((ResolvedArtifactResult) artifact).getFile(), scopes);
                         // add unresolved modules to workQueue

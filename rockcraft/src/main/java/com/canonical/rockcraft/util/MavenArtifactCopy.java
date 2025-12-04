@@ -53,7 +53,7 @@ public class MavenArtifactCopy {
         return hexString.toString();
     }
 
-    private Path getDestinationPath(String group, String name, String version) {
+    protected Path getDestinationPath(String group, String name, String version) {
         return outputLocationRoot.resolve(String.format("%s/%s/%s", group.replace('.', '/'), name, version));
     }
 
@@ -74,7 +74,7 @@ public class MavenArtifactCopy {
         writeDigest(destinationFile);
     }
 
-    private static void writeDigest(Path destinationFile) throws IOException {
+    protected static void writeDigest(Path destinationFile) throws IOException {
         // do not checksum checksums
         if (destinationFile.toString().endsWith(".sha1")) {
             return;

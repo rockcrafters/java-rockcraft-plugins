@@ -21,9 +21,14 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.StringTokenizer;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 /**
  * Utility class to copy artifact to the output location
@@ -57,23 +62,55 @@ public class ArtifactCopy extends MavenArtifactCopy {
      */
     public void copyToMavenRepository(ResolvedArtifactResult resolvedArtifact) throws IOException {
         File f = resolvedArtifact.getFile();
-        StringTokenizer tk = new StringTokenizer(resolvedArtifact.getId().getComponentIdentifier().getDisplayName(), ":");
-        String group = null;
-        if (tk.hasMoreTokens()) {
-            group = tk.nextToken();
-        }
-        String name = null;
-        if (tk.hasMoreTokens()) {
-            name = tk.nextToken();
-        }
-        String version = null;
-        if (tk.hasMoreTokens()) {
-            version = tk.nextToken();
-        }
+        String[] split = resolvedArtifact.getId().getComponentIdentifier().getDisplayName().split(":");
+        String group = split.length > 0 ? split[0] : null;
+        String name = split.length > 1 ? split[1] : null;
+        String version = split.length > 2 ? split[2] : null;
         if (group == null || name == null || version == null) {
-            logger.warn(String.format("Group, name and version should be set for the artifact %s:%s:%s", group, name, version));
+            logger.warn("Group, name and version should be set for the artifact {}:{}:{}", group, name, version);
             return;
         }
         copyToMavenRepository(f, group, name, version);
+    }
+
+    public void writeCompanionJar(ResolvedArtifactResult resolvedArtifact) throws IOException {
+        File f = resolvedArtifact.getFile();
+        if (!f.getName().endsWith(".pom")) {
+            return;
+        }
+        String[] split = resolvedArtifact.getId().getComponentIdentifier().getDisplayName().split(":");
+        String group = split.length > 0 ? split[0] : null;
+        String name = split.length > 1 ? split[1] : null;
+        String version = split.length > 2 ? split[2] : null;
+        if (group == null || name == null || version == null) {
+            logger.warn("Group, name and version should be set for the artifact {}:{}:{}", group, name, version);
+            return;
+        }
+        Path outputLocation = getDestinationPath(group, name, version);
+        String jarName = f.getName().substring(0, f.getName().length() - ".pom".length()) + ".jar";
+        File jarFile = null;
+        try {
+            jarFile = Files.createFile(outputLocation.resolve(jarName)).toFile();
+        } catch (IOException ex) {
+            return; // file exists just return
+        }
+        createCompanionJar(jarFile);
+        writeDigest(jarFile.toPath());
+    }
+
+    private void createCompanionJar(File f) throws IOException {
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().put(Attributes.Name.IMPLEMENTATION_TITLE, "Empty Jar");
+        manifest.getMainAttributes().put(Attributes.Name.IMPLEMENTATION_VERSION, "1.0.0");
+
+        try (FileOutputStream fos = new FileOutputStream(f);
+             JarOutputStream target = new JarOutputStream(fos, manifest)) {
+            JarEntry entry = new JarEntry("readme.txt");
+            entry.setTime(0L);
+            target.putNextEntry(entry);
+            target.write("This is a placeholder jar file".getBytes());
+            target.closeEntry();
+        }
     }
 }
