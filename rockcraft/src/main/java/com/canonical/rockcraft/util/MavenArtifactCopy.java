@@ -14,6 +14,7 @@
 package com.canonical.rockcraft.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -23,6 +24,10 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 /**
  * Utility class to copy a file into Maven repository
@@ -89,6 +94,22 @@ public class MavenArtifactCopy {
                     StandardOpenOption.TRUNCATE_EXISTING);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static void createCompanionJar(File f) throws IOException {
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().put(Attributes.Name.IMPLEMENTATION_TITLE, "Empty Jar");
+        manifest.getMainAttributes().put(Attributes.Name.IMPLEMENTATION_VERSION, "1.0.0");
+
+        try (FileOutputStream fos = new FileOutputStream(f);
+             JarOutputStream target = new JarOutputStream(fos, manifest)) {
+            JarEntry entry = new JarEntry("readme.txt");
+            entry.setTime(0L);
+            target.putNextEntry(entry);
+            target.write("This is a placeholder jar file".getBytes());
+            target.closeEntry();
         }
     }
 }

@@ -21,14 +21,9 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 
 /**
  * Utility class to copy artifact to the output location
@@ -98,19 +93,4 @@ public class ArtifactCopy extends MavenArtifactCopy {
         writeDigest(jarFile.toPath());
     }
 
-    private void createCompanionJar(File f) throws IOException {
-        Manifest manifest = new Manifest();
-        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-        manifest.getMainAttributes().put(Attributes.Name.IMPLEMENTATION_TITLE, "Empty Jar");
-        manifest.getMainAttributes().put(Attributes.Name.IMPLEMENTATION_VERSION, "1.0.0");
-
-        try (FileOutputStream fos = new FileOutputStream(f);
-             JarOutputStream target = new JarOutputStream(fos, manifest)) {
-            JarEntry entry = new JarEntry("readme.txt");
-            entry.setTime(0L);
-            target.putNextEntry(entry);
-            target.write("This is a placeholder jar file".getBytes());
-            target.closeEntry();
-        }
-    }
 }
