@@ -178,12 +178,13 @@ public final class CreateBuildRockMojo extends AbstractMojo {
                     "-Dmaven.repo.local="+dependenciesOutput,
                     "-f", buildPom.toString()));
             args.addAll(Arrays.asList(buildGoals));
+            args.add("dependency:go-offline");
             int exitCode = BuildRunner.runBuild(x ->  getLog().info(x), workingDirectory, args);
 
             if (exitCode != 0){
                 throw new MojoExecutionException("Failed to build project "+ project.getName() + ", dependencies are not available");
             }
-
+            removeResolverFiles(dependenciesOutput);
             BuildRockCrafter rockCrafter = new BuildRockCrafter(settings, getOptions(), Collections.singletonList(dependenciesOutput.toFile()));
             rockCrafter.writeRockcraft();
         }
@@ -205,5 +206,18 @@ public final class CreateBuildRockMojo extends AbstractMojo {
             }
         }
         return nativeProfileActivated && nativeCompileGoalRequested;
+    }
+    private void removeResolverFiles(Path output) throws IOException {
+        Files.walk(output)
+                .filter(path ->
+                    path.getFileName().toString().equals("_remote.repositories")
+                    || path.getFileName().toString().endsWith(".lastUpdated"))
+                .forEach(path -> {
+                    try {
+                        Files.delete(path);
+                    } catch (IOException e) {
+                        getLog().warn("Failed to delete resolver file: " + path.toString());
+                    }
+                });
     }
 }
