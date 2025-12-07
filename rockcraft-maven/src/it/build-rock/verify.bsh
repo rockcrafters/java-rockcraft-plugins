@@ -23,3 +23,9 @@ if ( ! dependency.exists() )
 {
     throw new FileNotFoundException( "Transitive dependency artifact (maven-resolver-plugin -> commons-lang3) was not copied: " + rockcraftPlugin.getAbsolutePath() );
 }
+
+File plexusUtils = new File( basedir.getAbsolutePath() + "/target/build-rock/dependencies/org/codehaus/plexus/plexus-utils/1.1/plexus-utils-1.1.jar");
+if ( ! plexusUtils.exists() )
+{
+    throw new FileNotFoundException( "Plexus utils workaround not applied" );
+}
