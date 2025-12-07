@@ -277,6 +277,9 @@ Build
                     ...
                     <!-- allows use of artifacts in the local Maven repository in the build container, default false -->
                     <allowLocal>true</allowLocal>
+                    <!-- workaround https://issues.apache.org/jira/browse/MNG-6965 - plugin will add
+                         a placeholder pom and jar in place of org.codehaus.plexus:plexus-utils:1.1 -->
+                    <workaroundPlexusUtils>true</workaroundPlexusUtils>
                 </configuration>
             </plugin>
         </plugins>
