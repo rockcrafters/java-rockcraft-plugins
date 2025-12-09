@@ -8,4 +8,4 @@ if [ $# -eq 0 ]; then
 else
   GOAL=$@
 fi
-(cd ${WORKDIR} && /usr/share/maven/bin/mvn --settings /home/builder/.m2/settings.xml $GOAL)
+(cd ${WORKDIR} && /usr/share/maven/bin/mvn -o --settings /home/ubuntu/.m2/settings.xml $GOAL)

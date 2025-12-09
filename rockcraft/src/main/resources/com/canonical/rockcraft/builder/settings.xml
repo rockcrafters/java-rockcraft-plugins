@@ -1,11 +1,3 @@
 <settings>
-    <mirrors>
-        <mirror>
-            <id>internal-repository</id>
-            <name>Internal Repository Mirror</name>
-            <url>file:///home/ubuntu/.m2/repository</url>
-            <mirrorOf>*</mirrorOf>
-        </mirror>
-    </mirrors>
     <localRepository>/home/ubuntu/.m2/repository</localRepository>
 </settings>

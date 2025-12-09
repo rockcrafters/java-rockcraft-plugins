@@ -6,6 +6,7 @@ import com.canonical.rockcraft.builder.IRockcraftNames;
 import com.canonical.rockcraft.builder.RockArchitecture;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 import com.canonical.rockcraft.util.BuildRunner;
+import com.canonical.rockcraft.util.MavenArtifactCopy;
 import com.canonical.rockcraft.util.POMUtil;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -25,6 +26,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -51,6 +53,9 @@ public final class CreateBuildRockMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${session}", readonly = true, required = true)
     private MavenSession session;
+
+    @Parameter(property = "workaroundPlexusUtils")
+    private final boolean workaroundPlexusUtils = true;
 
     @Parameter(property = "buildPackage")
     private final String buildPackage = "";
@@ -178,12 +183,16 @@ public final class CreateBuildRockMojo extends AbstractMojo {
                     "-Dmaven.repo.local="+dependenciesOutput,
                     "-f", buildPom.toString()));
             args.addAll(Arrays.asList(buildGoals));
+            args.add("dependency:go-offline");
             int exitCode = BuildRunner.runBuild(x ->  getLog().info(x), workingDirectory, args);
 
             if (exitCode != 0){
                 throw new MojoExecutionException("Failed to build project "+ project.getName() + ", dependencies are not available");
             }
-
+            if (workaroundPlexusUtils) {
+                workaroundPlexusUtils(dependenciesOutput);
+            }
+            removeResolverFiles(dependenciesOutput);
             BuildRockCrafter rockCrafter = new BuildRockCrafter(settings, getOptions(), Collections.singletonList(dependenciesOutput.toFile()));
             rockCrafter.writeRockcraft();
         }
@@ -205,5 +214,40 @@ public final class CreateBuildRockMojo extends AbstractMojo {
             }
         }
         return nativeProfileActivated && nativeCompileGoalRequested;
+    }
+
+    private void workaroundPlexusUtils(Path output) throws IOException{
+        Path oldPlexus = output.resolve("org/codehaus/plexus/plexus-utils/1.1");
+        if (Files.exists(oldPlexus)) {
+            return;
+        }
+        Files.createDirectories(oldPlexus);
+        Path pomFile = oldPlexus.resolve("plexus-utils-1.1.pom");
+        ArrayList<String> lines = new ArrayList<>();
+        lines.add("<project>");
+        lines.add("<modelVersion>4.0.0</modelVersion>");
+        lines.add("<groupId>org.codehaus.plexus</groupId>");
+        lines.add("<artifactId>plexus-utils</artifactId>");
+        lines.add("<version>1.1</version>");
+        lines.add("<name>Empty Jar</name>");
+        lines.add("<description>Workaround for https://issues.apache.org/jira/browse/MNG-6965</description>");
+        lines.add("</project>");
+        Files.write(pomFile, lines, Charset.defaultCharset());
+        Path jarFile = oldPlexus.resolve("plexus-utils-1.1.jar");
+        MavenArtifactCopy.createCompanionJar(jarFile.toFile());
+    }
+
+    private void removeResolverFiles(Path output) throws IOException {
+        Files.walk(output)
+                .filter(path ->
+                    path.getFileName().toString().equals("_remote.repositories")
+                    || path.getFileName().toString().endsWith(".lastUpdated"))
+                .forEach(path -> {
+                    try {
+                        Files.delete(path);
+                    } catch (IOException e) {
+                        getLog().warn("Failed to delete resolver file: " + path.toString());
+                    }
+                });
     }
 }
