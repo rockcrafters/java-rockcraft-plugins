@@ -176,10 +176,8 @@ public abstract class DependencyExportTask extends DefaultTask {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void copyBoms(ConfigurationContainer configurations, DependencyHandler handler, ArtifactCopy artifactCopy, Set<ComponentIdentifier> componentIdentifiers) throws IOException {
         ArtifactResolutionResult artifacts = handler.createArtifactResolutionQuery().forComponents(componentIdentifiers).withArtifacts(MavenModule.class, new Class[]{MavenPomArtifact.class}).execute();
-        HashSet<ComponentIdentifier> ids = new HashSet<>();
         for (ComponentArtifactsResult component : artifacts.getResolvedComponents()) {
             if (component.getId() instanceof ModuleComponentIdentifier) {
-                ids.add(component.getId());
                 for (ArtifactResult artifact : component.getArtifacts(MavenPomArtifact.class)) {
                     logger.debug("Found artifact " + artifact.getId());
                     artifactCopy.copyToMavenRepository(((ResolvedArtifactResult) artifact));
