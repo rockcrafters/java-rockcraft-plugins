@@ -95,7 +95,7 @@ public abstract class DependencyExportTask extends DefaultTask {
 
     private void exportConfiguration(Configuration config, ArtifactCopy artifactCopy) throws IOException {
         if (!config.isCanBeResolved()) {
-            logger.warn(String.format("Configuration %s can not be resolved. skipped.", config.getName()));
+            logger.warn("Configuration {} can not be resolved. skipped.", config.getName());
             return;
         }
         PomDependencyReader pomDependencyReader = new PomDependencyReader(getProject().getDependencies(), getProject().getConfigurations(), artifactCopy);
@@ -179,7 +179,7 @@ public abstract class DependencyExportTask extends DefaultTask {
         for (ComponentArtifactsResult component : artifacts.getResolvedComponents()) {
             if (component.getId() instanceof ModuleComponentIdentifier) {
                 for (ArtifactResult artifact : component.getArtifacts(MavenPomArtifact.class)) {
-                    logger.debug("Found artifact " + artifact.getId());
+                    logger.debug("Found artifact {}", artifact.getId());
                     artifactCopy.copyToMavenRepository(((ResolvedArtifactResult) artifact));
                 }
             }
