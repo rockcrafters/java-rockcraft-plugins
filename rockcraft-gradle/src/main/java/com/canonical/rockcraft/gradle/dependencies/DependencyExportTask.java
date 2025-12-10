@@ -158,8 +158,8 @@ public abstract class DependencyExportTask extends DefaultTask {
 
             }
         }
-        LenientConfiguration jarConfig = configurations.detachedConfiguration(dependencies.toArray(new Dependency[0])).setTransitive(true).getResolvedConfiguration().getLenientConfiguration();
-        for (ResolvedArtifact resolvedArtifact : jarConfig.getArtifacts()) {
+        LenientConfiguration extraConfig = configurations.detachedConfiguration(dependencies.toArray(new Dependency[0])).setTransitive(true).getResolvedConfiguration().getLenientConfiguration();
+        for (ResolvedArtifact resolvedArtifact : extraConfig.getArtifacts()) {
             File f = resolvedArtifact.getFile();
             String[] split = resolvedArtifact.getId().getComponentIdentifier().getDisplayName().split(":");
             String group = split.length > 0 ? split[0] : null;
