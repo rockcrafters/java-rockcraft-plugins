@@ -157,9 +157,10 @@ public abstract class DependencyExportTask extends DefaultTask {
         ArrayList<Dependency> dependencies = new ArrayList<>();
         for (String type : ARTIFACT_TYPES) {
             for (ComponentIdentifier id : workQueue) {
-                ModuleComponentIdentifier mid = (ModuleComponentIdentifier) id;
-                dependencies.add(getProject().getDependencies().create(mid.getGroup() + ":" + mid.getModule() + ":" + mid.getVersion() + "@" + type));
-
+                if (id instanceof ModuleComponentIdentifier) {
+                    ModuleComponentIdentifier mid = (ModuleComponentIdentifier) id;
+                    dependencies.add(getProject().getDependencies().create(mid.getGroup() + ":" + mid.getModule() + ":" + mid.getVersion() + "@" + type));
+                }
             }
         }
         LenientConfiguration extraConfig = configurations.detachedConfiguration(dependencies.toArray(new Dependency[0])).setTransitive(true).getResolvedConfiguration().getLenientConfiguration();
