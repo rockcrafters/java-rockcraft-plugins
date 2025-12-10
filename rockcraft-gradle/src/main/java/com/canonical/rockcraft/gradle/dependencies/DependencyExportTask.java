@@ -167,7 +167,7 @@ public abstract class DependencyExportTask extends DefaultTask {
             String version = split.length > 2 ? split[2] : null;
             if (group == null || name == null || version == null) {
                 logger.warn("Group, name and version should be set for the artifact {}:{}:{}", group, name, version);
-                return;
+                continue;
             }
             artifactCopy.copyToMavenRepository(f, group, name, version);
         }
