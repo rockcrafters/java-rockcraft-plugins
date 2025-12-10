@@ -54,9 +54,13 @@ import java.util.Set;
  * directory.
  */
 public abstract class DependencyExportTask extends DefaultTask {
+    /**
+     * In addition to pom files we need to ensure that we have jar files
+     * and module files for the project dependencies
+     */
+    public static final String[] ARTIFACT_TYPES = {"jar", "module"};
     private final Logger logger = Logging.getLogger(DependencyExportTask.class);
     private final DependencyOptions dependencyOptions;
-
     /**
      * Constructs DependencyExportTask
      *
@@ -151,7 +155,7 @@ public abstract class DependencyExportTask extends DefaultTask {
 
     private void copyExtraFiles(ConfigurationContainer configurations, ArtifactCopy artifactCopy, Set<ComponentIdentifier> workQueue) throws IOException {
         ArrayList<Dependency> dependencies = new ArrayList<>();
-        for (String type : new String[]{"jar", "module"}) {
+        for (String type : ARTIFACT_TYPES) {
             for (ComponentIdentifier id : workQueue) {
                 ModuleComponentIdentifier mid = (ModuleComponentIdentifier) id;
                 dependencies.add(getProject().getDependencies().create(mid.getGroup() + ":" + mid.getModule() + ":" + mid.getVersion() + "@" + type));
