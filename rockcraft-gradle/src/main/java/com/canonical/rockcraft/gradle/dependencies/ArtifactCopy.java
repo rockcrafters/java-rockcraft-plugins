@@ -67,30 +67,4 @@ public class ArtifactCopy extends MavenArtifactCopy {
         }
         copyToMavenRepository(f, group, name, version);
     }
-
-    public void writeCompanionJar(ResolvedArtifactResult resolvedArtifact) throws IOException {
-        File f = resolvedArtifact.getFile();
-        if (!f.getName().endsWith(".pom")) {
-            return;
-        }
-        String[] split = resolvedArtifact.getId().getComponentIdentifier().getDisplayName().split(":");
-        String group = split.length > 0 ? split[0] : null;
-        String name = split.length > 1 ? split[1] : null;
-        String version = split.length > 2 ? split[2] : null;
-        if (group == null || name == null || version == null) {
-            logger.warn("Group, name and version should be set for the artifact {}:{}:{}", group, name, version);
-            return;
-        }
-        Path outputLocation = getDestinationPath(group, name, version);
-        String jarName = f.getName().substring(0, f.getName().length() - ".pom".length()) + ".jar";
-        File jarFile = null;
-        try {
-            jarFile = Files.createFile(outputLocation.resolve(jarName)).toFile();
-        } catch (IOException ex) {
-            return; // file exists just return
-        }
-        createCompanionJar(jarFile);
-        writeDigest(jarFile.toPath());
-    }
-
 }
