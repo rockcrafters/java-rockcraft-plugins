@@ -51,6 +51,10 @@ gradlePlugin {
 }
 
 tasks.named<Test>("test") {
+    val javaToolchains = project.extensions.getByType<JavaToolchainService>()
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    })
     // Use JUnit Jupiter for unit tests.
     useJUnitPlatform() {
         val testTags: String? by project
