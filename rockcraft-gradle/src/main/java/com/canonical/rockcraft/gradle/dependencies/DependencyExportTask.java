@@ -38,6 +38,7 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.internal.component.external.model.DefaultModuleComponentIdentifier;
 import org.gradle.maven.MavenModule;
 import org.gradle.maven.MavenPomArtifact;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -53,6 +54,7 @@ import java.util.Set;
  * DependencyExportTask writes the project build dependencies to the output
  * directory.
  */
+@DisableCachingByDefault(because = "This task runs an external tool. It needs to perform its own up-to-date checks.")
 public abstract class DependencyExportTask extends DefaultTask {
     /**
      * In addition to pom files we need to ensure that we have jar files

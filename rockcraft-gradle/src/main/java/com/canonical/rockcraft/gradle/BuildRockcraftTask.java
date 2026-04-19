@@ -17,6 +17,7 @@ import com.canonical.rockcraft.builder.RockBuilder;
 import com.canonical.rockcraft.builder.RockcraftOptions;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.jvm.toolchain.JavaToolchainService;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.io.IOException;
  * This task builds a ROCK image by calling <i>rockcraft pack</i>.
  * It removes all previous ROCK artifacts from the build directory.
  */
+@DisableCachingByDefault(because = "This task runs an external tool that builds an OCI container. It needs to perform its own up-to-date checks.")
 public abstract class BuildRockcraftTask extends AbstractRockcraftTask {
 
     @Inject

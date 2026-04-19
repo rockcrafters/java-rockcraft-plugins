@@ -4,6 +4,7 @@ import com.canonical.rockcraft.builder.BuildRockcraftOptions;
 import com.canonical.rockcraft.builder.RockBuilder;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.io.IOException;
 /**
  * This task pushes rock image to the local docker
  */
+@DisableCachingByDefault(because = "This task pushes a built rock to the docker registry. Do not cache.")
 public class PushBuildRockcraftTask extends DefaultTask {
 
     private BuildRockcraftOptions options;
