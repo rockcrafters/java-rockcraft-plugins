@@ -16,12 +16,14 @@ package com.canonical.rockcraft.gradle;
 import com.canonical.rockcraft.builder.RockcraftOptions;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.Input;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 
 /**
  * Base class for rockcraft tasks
  */
+@DisableCachingByDefault(because = "This task runs an external tool that builds an OCI container. It needs to perform its own up-to-date checks.")
 public class AbstractRockcraftTask extends DefaultTask {
 
     @Input

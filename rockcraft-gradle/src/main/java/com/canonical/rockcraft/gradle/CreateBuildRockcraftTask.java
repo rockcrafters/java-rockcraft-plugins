@@ -19,6 +19,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.jvm.toolchain.JavaToolchainService;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -30,6 +31,7 @@ import java.util.Set;
 /**
  * CreateBuildRockcraftTask writes rockcraft.yaml for the build rock.
  */
+@DisableCachingByDefault(because = "This task runs an external tool that builds an OCI container. It needs to perform its own up-to-date checks.")
 public abstract class CreateBuildRockcraftTask extends DefaultTask {
 
     private final BuildRockcraftOptions options;

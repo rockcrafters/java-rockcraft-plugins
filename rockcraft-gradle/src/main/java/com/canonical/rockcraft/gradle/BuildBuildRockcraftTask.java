@@ -18,6 +18,7 @@ import com.canonical.rockcraft.builder.RockBuilder;
 import com.canonical.rockcraft.builder.RockProjectSettings;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.io.IOException;
 /**
  * Gradle task to pack build/test rock
  */
+@DisableCachingByDefault(because = "This task runs an external tool that builds an OCI container. It needs to perform its own up-to-date checks.")
 public class BuildBuildRockcraftTask extends DefaultTask {
     private final BuildRockcraftOptions options;
 

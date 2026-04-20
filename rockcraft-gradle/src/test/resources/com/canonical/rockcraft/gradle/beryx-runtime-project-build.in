@@ -1,5 +1,5 @@
 plugins {
-    id('org.beryx.runtime') version "1.12.5"
+    id('org.beryx.runtime') version "2.0.1"
     id('io.github.rockcrafters.rockcraft')
 }
 version = 0.01
