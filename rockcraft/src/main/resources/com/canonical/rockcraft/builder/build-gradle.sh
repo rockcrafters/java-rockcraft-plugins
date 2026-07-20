@@ -4,7 +4,7 @@ if [ $# -gt 0 ]; then
     shift
 fi
 if [ $# -eq 0 ]; then
-    TASK="!!goal!! -x checkRockcraft"
+    TASK="!!goal!!"
 else
     TASK=$@
 fi
