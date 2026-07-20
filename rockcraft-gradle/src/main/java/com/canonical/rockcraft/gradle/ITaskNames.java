@@ -39,4 +39,33 @@ public interface ITaskNames {
      * dependencies-export - used to write dependencies of the project
      */
     String DEPENDENCIES = "dependencies-export";
+
+    /**
+     * create-rock - generates rockcraft.yaml for the application rock
+     */
+    String CREATE_ROCK = "create-rock";
+    /**
+     * build-rock - packs the application rock
+     */
+    String BUILD_ROCK = "build-rock";
+    /**
+     * push-rock - pushes the application rock to a container registry
+     */
+    String PUSH_ROCK = "push-rock";
+    /**
+     *  create-build-rock - generates rockcraft.yaml for the build rock
+     */
+    String CREATE_BUILD_ROCK = "create-build-rock";
+    /**
+     *  build-build-rock - packs the build rock
+     */
+    String BUILD_BUILD_ROCK = "build-build-rock";
+    /**
+     * push-build-rock - pushes the build rock to a container registry
+     */
+    String PUSH_BUILD_ROCK = "push-build-rock";
+    /**
+     * checkRockcraft - verifies that rockcraft is installed
+     */
+    String CHECK_ROCKCRAFT = "checkRockcraft";
 }
