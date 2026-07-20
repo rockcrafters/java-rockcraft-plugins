@@ -14,6 +14,7 @@
 package com.canonical.rockcraft.gradle;
 
 import org.gradle.testkit.runner.BuildResult;
+import org.gradle.testkit.runner.BuildTask;
 import org.gradle.testkit.runner.TaskOutcome;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -21,9 +22,12 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -126,5 +130,37 @@ class RockcraftPluginTest extends BaseRockcraftTest {
         writeString(getBuildFile(), getResource("alloptions.in"));
         BuildResult result = runBuild("build-rock", "--stacktrace");
         assertEquals(TaskOutcome.SUCCESS, getLastTaskOutcome(result)); // the build needs to succeed
+    }
+
+    @Test
+    void rockcraftDisabledRegistersNoOpTasks() {
+        List<String> noOpTaskNames = Arrays.asList(
+                ITaskNames.DEPENDENCIES,
+                ITaskNames.CREATE_BUILD_ROCK,
+                ITaskNames.BUILD_BUILD_ROCK,
+                ITaskNames.PUSH_BUILD_ROCK,
+                ITaskNames.CHECK_ROCKCRAFT,
+                ITaskNames.CREATE_ROCK,
+                ITaskNames.BUILD_ROCK,
+                ITaskNames.PUSH_ROCK
+        );
+
+        String[] args = new String[noOpTaskNames.size() + 1];
+        args[0] = "-P" + RockcraftPlugin.ROCKCRAFT_DISABLED_PROPERTY;
+        for (int i = 0; i < noOpTaskNames.size(); i++) {
+            args[i + 1] = noOpTaskNames.get(i);
+        }
+
+        BuildResult result = runBuild(args);
+
+        for (String taskName : noOpTaskNames) {
+            BuildTask task = result.task(":" + taskName);
+            assertNotNull(task, "Task '" + taskName + "' must be registered");
+            TaskOutcome outcome = task.getOutcome();
+            assertTrue(
+                    outcome == TaskOutcome.SUCCESS || outcome == TaskOutcome.SKIPPED || outcome == TaskOutcome.UP_TO_DATE,
+                    "Task '" + taskName + "' must complete without failure, got: " + outcome
+            );
+        }
     }
 }
