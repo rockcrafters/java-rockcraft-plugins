@@ -51,12 +51,21 @@ public class RockcraftPlugin implements Plugin<Project> {
     }
 
 
+    /** Settings property name that disables all rockcraft tasks */
+    static final String ROCKCRAFT_DISABLED_PROPERTY = "rockcraft-disabled";
+
     /**
      * Applies the plugin
      *
      * @param project The target object
      */
     public void apply(Project project) {
+
+        if (project.hasProperty(ROCKCRAFT_DISABLED_PROPERTY)) {
+            logger.log(LogLevel.WARN, "Rockcraft plugin tasks are disabled by the '{}' property", ROCKCRAFT_DISABLED_PROPERTY);
+            registerNoOpTasks(project);
+            return;
+        }
 
         project.getPlugins().apply(OsDetectorPlugin.class);
 
@@ -85,23 +94,23 @@ public class RockcraftPlugin implements Plugin<Project> {
         buildOptions.setNativeImage(isNativeCompile(project));
 
         project.getTasks()
-                .register("create-build-rock", CreateBuildRockcraftTask.class, buildOptions);
+                .register(ITaskNames.CREATE_BUILD_ROCK, CreateBuildRockcraftTask.class, buildOptions);
         project.getTasks()
-                .getByName("create-build-rock")
-                .dependsOn(project.getTasksByName("dependencies-export", false));
+                .getByName(ITaskNames.CREATE_BUILD_ROCK)
+                .dependsOn(project.getTasksByName(ITaskNames.DEPENDENCIES, false));
         project.getTasks()
-                .register("build-build-rock", BuildBuildRockcraftTask.class, buildOptions);
+                .register(ITaskNames.BUILD_BUILD_ROCK, BuildBuildRockcraftTask.class, buildOptions);
         project.getTasks()
-                .getByName("build-build-rock")
-                .dependsOn(project.getTasksByName("create-build-rock", false));
+                .getByName(ITaskNames.BUILD_BUILD_ROCK)
+                .dependsOn(project.getTasksByName(ITaskNames.CREATE_BUILD_ROCK, false));
         project.getTasks()
-                .register("push-build-rock", PushBuildRockcraftTask.class, buildOptions);
+                .register(ITaskNames.PUSH_BUILD_ROCK, PushBuildRockcraftTask.class, buildOptions);
         project.getTasks()
-                .getByName("push-build-rock")
-                .dependsOn(project.getTasksByName("build-build-rock", false));
+                .getByName(ITaskNames.PUSH_BUILD_ROCK)
+                .dependsOn(project.getTasksByName(ITaskNames.BUILD_BUILD_ROCK, false));
 
 
-        TaskProvider<Task> checkTask = project.getTasks().register("checkRockcraft", s -> {
+        TaskProvider<Task> checkTask = project.getTasks().register(ITaskNames.CHECK_ROCKCRAFT, s -> {
             s.doFirst(x -> {
                 try {
                     RockBuilder.checkRockcraft();
@@ -112,7 +121,7 @@ public class RockcraftPlugin implements Plugin<Project> {
         });
 
         project.getTasks()
-                .getByName("build-build-rock")
+                .getByName(ITaskNames.BUILD_BUILD_ROCK)
                 .dependsOn(checkTask);
 
         Set<Task> tasks;
@@ -134,25 +143,40 @@ public class RockcraftPlugin implements Plugin<Project> {
             return;
         }
 
-        project.getTasks().register("push-rock", PushRockcraftTask.class, options);
+        project.getTasks().register(ITaskNames.PUSH_ROCK, PushRockcraftTask.class, options);
 
         options.setNativeImage(isNativeCompile(project));
 
-        TaskProvider<BuildRockcraftTask> build = project.getTasks().register("build-rock", BuildRockcraftTask.class, options);
-        TaskProvider<CreateRockcraftTask> create = project.getTasks().register("create-rock", CreateRockcraftTask.class, options);
+        TaskProvider<BuildRockcraftTask> build = project.getTasks().register(ITaskNames.BUILD_ROCK, BuildRockcraftTask.class, options);
+        TaskProvider<CreateRockcraftTask> create = project.getTasks().register(ITaskNames.CREATE_ROCK, CreateRockcraftTask.class, options);
 
-        project.getTasks().getByName("push-rock")
+        project.getTasks().getByName(ITaskNames.PUSH_ROCK)
                 .dependsOn(build);
 
-        project.getTasks().getByName("build-rock")
+        project.getTasks().getByName(ITaskNames.BUILD_ROCK)
                 .dependsOn(create)
                         .dependsOn(checkTask);
 
-        project.getTasks().getByName("build-rock")
+        project.getTasks().getByName(ITaskNames.BUILD_ROCK)
                 .dependsOn(create);
 
-        project.getTasks().getByName("create-rock")
+        project.getTasks().getByName(ITaskNames.CREATE_ROCK)
                 .dependsOn(tasks);
+    }
+
+    private void registerNoOpTasks(Project project) {
+        for (String taskName : new String[]{
+                ITaskNames.DEPENDENCIES,
+                ITaskNames.CREATE_BUILD_ROCK,
+                ITaskNames.BUILD_BUILD_ROCK,
+                ITaskNames.PUSH_BUILD_ROCK,
+                ITaskNames.CHECK_ROCKCRAFT,
+                ITaskNames.CREATE_ROCK,
+                ITaskNames.BUILD_ROCK,
+                ITaskNames.PUSH_ROCK
+        }) {
+            project.getTasks().register(taskName, t -> t.setGroup("rockcraft"));
+        }
     }
 
     private boolean isNativeCompile(Project project) {
