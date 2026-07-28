@@ -146,7 +146,7 @@ public abstract class DependencyExportTask extends DefaultTask {
                         // copy unresolved boms to maven cache
                         HashSet<ComponentIdentifier> unresolvedBoms = new HashSet<>();
                         dependencies.getDependencyManagement().stream().filter(x -> !dependencyManagementResolved.contains(x)).forEach(unresolvedBoms::add);
-                        copyBoms(configurations, handler, artifactCopy, unresolvedBoms);
+                        copyBoms(handler, artifactCopy, unresolvedBoms);
                         copyExtraFiles(configurations, artifactCopy, unresolvedBoms);
                         dependencyManagementResolved.addAll(dependencies.getDependencyManagement());
                     }
@@ -181,7 +181,7 @@ public abstract class DependencyExportTask extends DefaultTask {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void copyBoms(ConfigurationContainer configurations, DependencyHandler handler, ArtifactCopy artifactCopy, Set<ComponentIdentifier> componentIdentifiers) throws IOException {
+    private void copyBoms( DependencyHandler handler, ArtifactCopy artifactCopy, Set<ComponentIdentifier> componentIdentifiers) throws IOException {
         ArtifactResolutionResult artifacts = handler.createArtifactResolutionQuery().forComponents(componentIdentifiers).withArtifacts(MavenModule.class, new Class[]{MavenPomArtifact.class}).execute();
         for (ComponentArtifactsResult component : artifacts.getResolvedComponents()) {
             if (component.getId() instanceof ModuleComponentIdentifier) {
@@ -202,23 +202,33 @@ public abstract class DependencyExportTask extends DefaultTask {
     public void export() throws IOException {
         Path outputLocationRoot = getOutputDirectory().getAsFile().get().toPath();
         ArtifactCopy artifactCopy = new ArtifactCopy(outputLocationRoot);
-        if (dependencyOptions.getConfigurations() != null && dependencyOptions.getConfigurations().length > 0) {
-            for (String configName : dependencyOptions.getConfigurations()) {
-                Configuration config = getProject().getConfigurations().findByName(configName);
-                if (config == null)
-                    throw new IllegalArgumentException(String.format("Configuration %s was not found", configName));
-                exportConfiguration(config, artifactCopy);
-            }
-            if (dependencyOptions.isBuildScript()) {
+        BomResolutionListener listener = new BomResolutionListener();
+        try {
+            getProject().getGradle().addListener(listener);
+            if (dependencyOptions.getConfigurations() != null && dependencyOptions.getConfigurations().length > 0) {
+                for (String configName : dependencyOptions.getConfigurations()) {
+                    Configuration config = getProject().getConfigurations().findByName(configName);
+                    if (config == null)
+                        throw new IllegalArgumentException(String.format("Configuration %s was not found", configName));
+                    exportConfiguration(config, artifactCopy);
+                }
+                if (dependencyOptions.isBuildScript()) {
+                    exportBuildScript(artifactCopy);
+                    exportSettings(artifactCopy);
+                }
+            } else {
+                for (Configuration config : getProject().getConfigurations()) {
+                    exportConfiguration(config, artifactCopy);
+                }
                 exportBuildScript(artifactCopy);
                 exportSettings(artifactCopy);
             }
-        } else {
-            for (Configuration config : getProject().getConfigurations()) {
-                exportConfiguration(config, artifactCopy);
-            }
-            exportBuildScript(artifactCopy);
-            exportSettings(artifactCopy);
+            // this writes BOMs looked up by the plugins,
+            // e.g. spring dependency-management plugin
+            copyBoms(getProject().getDependencies(), artifactCopy, listener.getBoms());
+        }
+        finally {
+            getProject().getGradle().removeListener(listener);
         }
     }
 }

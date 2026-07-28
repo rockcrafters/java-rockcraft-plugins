@@ -107,4 +107,14 @@ public class DependencyExportTest extends BaseRockcraftTest {
         Path pluginJar = projectDir.toPath().resolve("build/" + IRockcraftNames.BUILD_ROCK_OUTPUT + "/" + IRockcraftNames.DEPENDENCIES_ROCK_OUTPUT + "/io/gitlab/plunts/plantuml-gradle-plugin/2.0.0/plantuml-gradle-plugin-2.0.0.jar");
         assertTrue(pluginJar.toFile().exists(), "Plugin JAR is downloaded");
     }
+
+    @Test
+    public void testExportSpringDependencyManagementBom() throws IOException {
+        writeString(getBuildFile(), getResource("dependencies-spring-dm.in"));
+        BuildResult result = runBuild("dependencies-export", "--stacktrace");
+        assertEquals(TaskOutcome.SUCCESS, getLastTaskOutcome(result)); // the build needs to succeed
+
+        Path bomPom = projectDir.toPath().resolve("build/" + IRockcraftNames.BUILD_ROCK_OUTPUT + "/" + IRockcraftNames.DEPENDENCIES_ROCK_OUTPUT + "/org/springframework/boot/spring-boot-dependencies/3.3.4/spring-boot-dependencies-3.3.4.pom");
+        assertTrue(bomPom.toFile().exists(), "spring-boot-dependencies BOM POM is exported");
+    }
 }
