@@ -1,37 +1,39 @@
-apply plugin: DisableRepos
-class DisableRepos implements Plugin<Gradle> {
-    void apply(Gradle gradle) {
-        String localRepo = "file:///home/ubuntu/.m2/repository"
-        gradle.settingsEvaluated { settings ->
-            settings.pluginManagement.repositories {
-                clear()
-                maven {
-                    url localRepo
-                }
+String localRepo = "file:///home/ubuntu/.m2/repository"
+
+gradle.beforeSettings { settings ->
+    settings.pluginManagement.repositories {
+        clear()
+        maven {
+            url=localRepo
+        }
+        whenObjectAdded { repo ->
+            if (repo instanceof MavenArtifactRepository
+                    && repo.url.toString() != localRepo) {
+                repo.url = localRepo
             }
         }
-        gradle.beforeSettings { settings ->
-            settings.pluginManagement.repositories {
-                clear()
-                maven {
-                    url localRepo
-                }
+    }
+}
+
+gradle.allprojects { project ->
+    project.repositories {
+        clear()
+        maven { url = localRepo }
+        whenObjectAdded { repo ->
+            if (repo instanceof MavenArtifactRepository
+                    && repo.url.toString() != localRepo) {
+                repo.url = localRepo
             }
         }
-        gradle.allprojects {
-            project.repositories {
-                clear()
-                maven {
-                    url localRepo
-                }
-            }
-            project.buildscript {
-                repositories {
-                    clear()
-                    maven {
-                        url localRepo
-                    }
-                }
+    }
+    buildscript.repositories {
+        clear()
+        maven {  url=localRepo }
+
+        whenObjectAdded { repo ->
+            if (repo instanceof MavenArtifactRepository
+                    && repo.url.toString() != localRepo) {
+                repo.url = localRepo
             }
         }
     }

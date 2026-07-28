@@ -97,6 +97,7 @@ public class CreateBuildRockTest extends BaseRockcraftTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testBuildRockcraftPartMerge() throws IOException {
         writeString(getBuildFile(), getResource("build-rockcraft-options.in"));
         File buildRock = new File(getProjectDir(), IRockcraftNames.BUILD_ROCK_OUTPUT);
@@ -117,6 +118,7 @@ public class CreateBuildRockTest extends BaseRockcraftTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testToolchainOption() throws IOException {
         writeString(getBuildFile(), getResource("toolchain-options.in"));
         BuildResult result = runBuild(ITaskNames.CREATE_BUILD_ROCK, "--stacktrace");
@@ -138,5 +140,106 @@ public class CreateBuildRockTest extends BaseRockcraftTest {
         writeString(getBuildFile(), getResource("build-build-rock-no-rockcraft.in"));
         BuildResult result = runBuild(ITaskNames.BUILD_BUILD_ROCK, "--stacktrace");
         assertEquals(TaskOutcome.SKIPPED, result.task(":" + ITaskNames.BUILD_BUILD_ROCK).getOutcome());
+    }
+
+    @Test
+    public void testLocalBuildGradleInitScript() throws IOException {
+        // Create settings.gradle with pluginManagement repositories
+        writeString(getSettingsFile(),
+            "pluginManagement {\n" +
+            "    repositories {\n" +
+            "        mavenCentral()\n" +
+            "        gradlePluginPortal()\n" +
+            "    }\n" +
+            "}\n" +
+            "rootProject.name = 'test-project'\n" +
+            "include 'subproject'\n");
+
+        // Create root build.gradle with repositories and buildscript repositories
+        writeString(getBuildFile(),
+            "buildscript {\n" +
+            "    repositories {\n" +
+            "        mavenCentral()\n" +
+            "        google()\n" +
+            "    }\n" +
+            "}\n" +
+            "repositories {\n" +
+            "    mavenCentral()\n" +
+            "    maven { url = uri('https://repo.spring.io/milestone') }\n" +
+            "}\n" +
+            "\n" +
+            "task dumpRepositories {\n" +
+            "    doLast {\n" +
+            "        println '=== Root Project Repositories ==='\n" +
+            "        repositories.each { repo ->\n" +
+            "            if (repo instanceof MavenArtifactRepository) {\n" +
+            "                println \"REPO:${repo.url}\"\n" +
+            "            }\n" +
+            "        }\n" +
+            "        println '=== Root Buildscript Repositories ==='\n" +
+            "        buildscript.repositories.each { repo ->\n" +
+            "            if (repo instanceof MavenArtifactRepository) {\n" +
+            "                println \"BUILDSCRIPT_REPO:${repo.url}\"\n" +
+            "            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n");
+
+        // Create subproject directory and build file
+        File subprojectDir = new File(projectDir, "subproject");
+        subprojectDir.mkdirs();
+        writeString(new File(subprojectDir, "build.gradle"),
+            "buildscript {\n" +
+            "    repositories {\n" +
+            "        mavenCentral()\n" +
+            "        maven { url = uri('https://repo.gradle.org/gradle/libs-releases') }\n" +
+            "    }\n" +
+            "}\n" +
+            "repositories {\n" +
+            "    mavenCentral()\n" +
+            "    maven { url = uri('https://plugins.gradle.org/m2/') }\n" +
+            "}\n" +
+            "\n" +
+            "task dumpRepositories {\n" +
+            "    doLast {\n" +
+            "        println '=== Subproject Repositories ==='\n" +
+            "        repositories.each { repo ->\n" +
+            "            if (repo instanceof MavenArtifactRepository) {\n" +
+            "                println \"SUBPROJECT_REPO:${repo.url}\"\n" +
+            "            }\n" +
+            "        }\n" +
+            "        println '=== Subproject Buildscript Repositories ==='\n" +
+            "        buildscript.repositories.each { repo ->\n" +
+            "            if (repo instanceof MavenArtifactRepository) {\n" +
+            "                println \"SUBPROJECT_BUILDSCRIPT_REPO:${repo.url}\"\n" +
+            "            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n");
+
+        Path initScript = Paths.get("../rockcraft/src/main/resources/com/canonical/rockcraft/builder/local-build.gradle");
+        // Run build with init script
+        BuildResult result = runBuild("--init-script",
+                initScript.toAbsolutePath().toString(), "dumpRepositories", ":subproject:dumpRepositories");
+        assertEquals(TaskOutcome.SUCCESS, result.task(":dumpRepositories").getOutcome());
+        assertEquals(TaskOutcome.SUCCESS, result.task(":subproject:dumpRepositories").getOutcome());
+
+        String output = result.getOutput();
+        // Gradle normalizes file:/// to file:/ (single slash)
+        String expectedRepo = "file:/home/ubuntu/.m2/repository";
+
+        // Verify all repositories point to local repo
+        // Root project repositories
+        assertTrue(output.contains("REPO:" + expectedRepo),
+            "Root project repository should point to local repo. Output: " + output);
+        // Root buildscript repositories
+        assertTrue(output.contains("BUILDSCRIPT_REPO:" + expectedRepo),
+            "Root buildscript repository should point to local repo. Output: " + output);
+        // Subproject repositories
+        assertTrue(output.contains("SUBPROJECT_REPO:" + expectedRepo),
+            "Subproject repository should point to local repo. Output: " + output);
+        // Subproject buildscript repositories
+        assertTrue(output.contains("SUBPROJECT_BUILDSCRIPT_REPO:" + expectedRepo),
+            "Subproject buildscript repository should point to local repo. Output: " + output);
     }
 }
