@@ -5,7 +5,7 @@
 junit-jupiter = "5.14.4"
 commons-text = "1.15.0"
 osdetector = "1.7.3"
-snakeyaml = "2.6"
+snakeyaml = "2.7"
 maven-model = "3.9.16"
 
 [libraries]
