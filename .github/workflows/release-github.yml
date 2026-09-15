@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '8.0.504+1'
       - name: Publish to Github
         run: |
           mvn deploy -Pgithub "-Dgpr.repo=${{ vars.GHP_REPO }}"
