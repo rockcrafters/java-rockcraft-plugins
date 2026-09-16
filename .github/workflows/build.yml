@@ -29,7 +29,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '25'
           cache: gradle
 
       - name: Build and verify Gradle sample projects
@@ -51,7 +51,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '25'
           cache: maven
       - name: Setup openjdk packages
         run: |
@@ -76,7 +76,7 @@ jobs:
         uses: actions/setup-java@v5
         with: # running setup-java again overwrites the settings.xml
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '25'
           cache: maven
       - name: Setup openjdk packages
         run: |
@@ -112,7 +112,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '25'
           cache: gradle
       - name: Setup OpenJDK packages
         run: |
