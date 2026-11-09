@@ -31,7 +31,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
           cache: gradle
-
+      - name: Setup OpenJDK packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-8-jdk-headless
+          
       - name: Build and verify Gradle sample projects
         run: |
           ./gradlew publishToMavenLocal
