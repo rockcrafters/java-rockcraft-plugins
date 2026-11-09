@@ -204,7 +204,7 @@ public class BuildRockCrafter extends AbstractRockCrafter {
         part.put("stage-packages", new String[] { "gcc", "zlib1g-dev" });
 
        /* Files installed by gcc needed to be explicitly staged because there is an overlap between what
-          we stage here and what is staged in the `dependencies` part, using chisel slice definitions.
+          we stage here and what is staged in the `dependencies` part, using chisel slices.
           Moreover, gcc cannot be staged in `dependencies` because it does not have a chisel slice
           definition. So, we selectively stage what native-image needs.
         */
